@@ -33,4 +33,11 @@
     <string name="hint_search">Search news…</string>
     <string name="label_search_results">Search Results</string>
     <string name="label_search_empty">No results found.\nTry different keywords.</string>
+    <string name="label_open_browser">Open in browser.</string>
+    <string name="label_share">Share ke...</string>
+
+    <!-- Messages -->
+    <string name="msg_error_generic">Something went wrong. Please try again.</string>
+    <string name="msg_bookmarked">Article bookmarked.</string>
+    <string name="msg_bookmark_removed">Bookmark removed.</string>
 </resources>

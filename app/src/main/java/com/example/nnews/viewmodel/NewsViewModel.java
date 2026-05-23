@@ -31,6 +31,9 @@ public class NewsViewModel extends ViewModel {
     // ===== BOOKMARK =====
     private final LiveData<List<Article>> bookmarks;
 
+    // ===== SELECTED ARTICLE =====
+    private final MutableLiveData<Article> selectedArticle = new MutableLiveData<>();
+
     // ===== LOADING STATE =====
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
@@ -125,6 +128,18 @@ public class NewsViewModel extends ViewModel {
 
     public LiveData<Boolean> isBookmarked(String url) {
         return repository.isBookmarked(url);
+    }
+
+    // ===================================================
+    // SELECTED ARTICLE
+    // ===================================================
+
+    public void setSelectedArticle(Article article) {
+        selectedArticle.setValue(article);
+    }
+
+    public LiveData<Article> getSelectedArticle() {
+        return selectedArticle;
     }
 
     // ===================================================

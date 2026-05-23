@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -237,9 +239,12 @@ public class HomeFragment extends Fragment {
     // ===================================================
 
     private void navigateToDetail(Article article) {
+        // Simpan artikel ke ViewModel sebelum navigate
+        viewModel.setSelectedArticle(article);
+
         HomeFragmentDirections.ActionHomeToDetail action =
                 HomeFragmentDirections.actionHomeToDetail(
-                        article.getUrl(),
+                        article.getUrl() != null ? article.getUrl() : "",
                         article.getTitle() != null ? article.getTitle() : ""
                 );
         Navigation.findNavController(requireView()).navigate(action);
@@ -276,5 +281,16 @@ public class HomeFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    // ===== SELECTED ARTICLE (untuk Detail Screen) =====
+    private final MutableLiveData<Article> selectedArticle = new MutableLiveData<>();
+
+    public void setSelectedArticle(Article article) {
+        selectedArticle.setValue(article);
+    }
+
+    public LiveData<Article> getSelectedArticle() {
+        return selectedArticle;
     }
 }
