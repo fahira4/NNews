@@ -13,4 +13,19 @@
 
     <string name="label_full_article">Full Article</string>
     <string name="label_settings">Settings</string>
+
+    <!-- States -->
+    <string name="state_empty">No news available right now.</string>
+    <string name="state_loading">Loading news…</string>
+    <string name="state_error">Something went wrong.</string>
+    <string name="state_error_network">No internet connection.\nPlease check your network.</string>
+    <string name="state_error_retry">Retry</string>
+
+    <!-- Labels -->
+    <string name="label_source">Unknown Source</string>
+    <string name="label_top_headlines">Top Headlines</string>
+    <string name="label_breaking_news">Breaking News</string>
+    <string name="label_latest_news">Latest News</string>
+    <string name="label_read_more">Read More</string>
+    <string name="label_published_at">Published</string>
 </resources>
