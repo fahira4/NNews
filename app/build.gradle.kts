@@ -13,8 +13,14 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Baca langsung dari gradle.properties
+        buildConfigField(
+            "String",
+            "NEWS_API_KEY",
+            property("NEWS_API_KEY").toString()
+        )
     }
 
     buildTypes {
