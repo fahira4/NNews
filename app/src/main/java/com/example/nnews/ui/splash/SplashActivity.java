@@ -8,7 +8,7 @@ import android.os.Looper;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.nnews.R;
-import com.example.nnews.main.MainActivity;
+import com.example.nnews.MainActivity;
 
 public class SplashActivity extends AppCompatActivity {
 
