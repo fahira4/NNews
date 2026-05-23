@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <!-- ===== HOME ===== -->
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.nnews.ui.home.HomeFragment"
+        android:label="@string/nav_home"
+        tools:layout="@layout/fragment_home">
+
+        <action
+            android:id="@+id/action_home_to_detail"
+            app:destination="@id/detailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+    </fragment>
+
+    <!-- ===== DETAIL ===== -->
+    <fragment
+        android:id="@+id/detailFragment"
+        android:name="com.example.nnews.ui.detail.DetailFragment"
+        android:label="@string/label_full_article"
+        tools:layout="@layout/fragment_detail">
+
+        <!-- Safe Args argument -->
+        <argument
+            android:name="articleUrl"
+            app:argType="string" />
+
+        <argument
+            android:name="articleTitle"
+            app:argType="string" />
+
+    </fragment>
+
+    <!-- ===== BOOKMARK ===== -->
+    <fragment
+        android:id="@+id/bookmarkFragment"
+        android:name="com.example.nnews.ui.bookmark.BookmarkFragment"
+        android:label="@string/nav_bookmark"
+        tools:layout="@layout/fragment_bookmark">
+
+        <action
+            android:id="@+id/action_bookmark_to_detail"
+            app:destination="@id/detailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+    </fragment>
+
+    <!-- ===== SETTINGS ===== -->
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.nnews.ui.settings.SettingsFragment"
+        android:label="@string/label_settings"
+        tools:layout="@layout/fragment_settings" />
+
+</navigation>

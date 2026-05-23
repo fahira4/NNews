@@ -1,11 +1,32 @@
 package com.example.nnews.ui.bookmark;
 
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-/**
- * Bookmark Fragment — daftar berita yang disimpan.
- * Akan dilengkapi di Tahap 13 (Bookmark Feature).
- */
+import com.example.nnews.databinding.FragmentBookmarkBinding;
+
 public class BookmarkFragment extends Fragment {
-    // Placeholder - akan diisi di Tahap 13
+
+    private FragmentBookmarkBinding binding;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        binding = FragmentBookmarkBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
 }

@@ -6,4 +6,11 @@
     <string name="content_desc_back">Go back</string>
     <string name="content_desc_bookmark_icon">Bookmark icon</string>
     <string name="content_desc_search_icon">Search icon</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_bookmark">Bookmark</string>
+    <string name="nav_settings">Settings</string>
+
+    <string name="label_full_article">Full Article</string>
+    <string name="label_settings">Settings</string>
 </resources>
