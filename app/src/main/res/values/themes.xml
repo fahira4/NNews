@@ -3,16 +3,19 @@
 
     <style name="Base.Theme.NNews" parent="Theme.Material3.DayNight.NoActionBar">
 
+        <!-- Primary -->
         <item name="colorPrimary">@color/colorPrimaryBrand</item>
         <item name="colorOnPrimary">@color/colorOnPrimaryBrand</item>
         <item name="colorPrimaryContainer">@color/colorPrimaryContainer</item>
         <item name="colorOnPrimaryContainer">@color/colorOnPrimaryContainer</item>
 
+        <!-- Secondary -->
         <item name="colorSecondary">@color/colorSecondaryBrand</item>
         <item name="colorOnSecondary">@color/colorOnSecondaryBrand</item>
         <item name="colorSecondaryContainer">@color/colorSecondaryContainer</item>
         <item name="colorOnSecondaryContainer">@color/colorOnSecondaryContainer</item>
 
+        <!-- Background & Surface -->
         <item name="android:colorBackground">@color/colorBackground</item>
         <item name="colorOnBackground">@color/colorOnBackground</item>
         <item name="colorSurface">@color/colorSurface</item>
@@ -20,10 +23,14 @@
         <item name="colorSurfaceVariant">@color/colorSurfaceVariant</item>
         <item name="colorOnSurfaceVariant">@color/colorOnSurfaceVariant</item>
 
+        <!-- Error -->
         <item name="colorError">@color/colorError</item>
         <item name="colorOnError">@color/colorOnError</item>
+
+        <!-- Outline -->
         <item name="colorOutline">@color/colorOutline</item>
 
+        <!-- Status & Nav Bar -->
         <item name="android:statusBarColor">@color/colorStatusBar</item>
         <item name="android:navigationBarColor">@color/colorNavigationBar</item>
         <item name="android:windowLightStatusBar">true</item>
@@ -32,6 +39,7 @@
 
     <style name="Theme.NNews" parent="Base.Theme.NNews" />
 
+    <!-- Splash Screen Theme -->
     <style name="Theme.NNews.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/colorSplashBackground</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_nnews_light</item>
@@ -39,18 +47,21 @@
         <item name="postSplashScreenTheme">@style/Theme.NNews</item>
     </style>
 
+    <!-- Toolbar -->
     <style name="Widget.NNews.Toolbar" parent="Widget.Material3.Toolbar">
         <item name="android:background">@color/colorToolbarBackground</item>
         <item name="titleTextColor">@color/colorToolbarTitle</item>
         <item name="android:elevation">0dp</item>
     </style>
 
+    <!-- Card -->
     <style name="Widget.NNews.Card" parent="Widget.Material3.CardView.Elevated">
         <item name="cardCornerRadius">@dimen/radius_md</item>
         <item name="cardElevation">@dimen/card_elevation</item>
         <item name="cardBackgroundColor">@color/colorSurface</item>
     </style>
 
+    <!-- Bottom Navigation -->
     <style name="Widget.NNews.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
         <item name="android:background">@color/colorBottomNavBackground</item>
     </style>
