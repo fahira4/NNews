@@ -2,6 +2,8 @@
 # Build
 agp = "8.7.0"
 java = "11"
+swiperefresh = "1.1.0"
+shimmer = "0.5.0"
 
 # AndroidX Core
 coreKtx = "1.13.1"
@@ -68,6 +70,8 @@ glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", versi
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+androidx-swiperefresh = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefresh" }
+shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shimmer" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

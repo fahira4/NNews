@@ -28,4 +28,9 @@
     <string name="label_latest_news">Latest News</string>
     <string name="label_read_more">Read More</string>
     <string name="label_published_at">Published</string>
+
+    <!-- Search -->
+    <string name="hint_search">Search news…</string>
+    <string name="label_search_results">Search Results</string>
+    <string name="label_search_empty">No results found.\nTry different keywords.</string>
 </resources>

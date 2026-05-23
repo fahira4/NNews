@@ -86,4 +86,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // UI
+    implementation(libs.androidx.swiperefresh)
+    implementation(libs.shimmer)
 }
