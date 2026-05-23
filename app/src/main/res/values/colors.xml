@@ -1,17 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="primary">#0A84FF</color>
-    <color name="secondary">#00D1FF</color>
-    <color name="accent">#8B5CF6</color>
+    <!-- ===== BRAND COLORS ===== -->
+    <color name="brand_blue_primary">#1565C0</color>
+    <color name="brand_cyan">#00BCD4</color>
+    <color name="brand_purple">#7B1FA2</color>
+
+    <!-- ===== PRIMARY ===== -->
+    <color name="colorPrimaryBrand">#1565C0</color>
+    <color name="colorOnPrimaryBrand">#FFFFFF</color>
+    <color name="colorPrimaryContainer">#D6E4FF</color>
+    <color name="colorOnPrimaryContainer">#001944</color>
+
+    <!-- ===== SECONDARY ===== -->
+    <color name="colorSecondaryBrand">#00BCD4</color>
+    <color name="colorOnSecondaryBrand">#FFFFFF</color>
+    <color name="colorSecondaryContainer">#CBF0F8</color>
+    <color name="colorOnSecondaryContainer">#001F24</color>
+
+    <!-- ===== BACKGROUND & SURFACE ===== -->
+    <color name="colorBackground">#F8FAFF</color>
+    <color name="colorOnBackground">#1A1C1E</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorOnSurface">#1A1C1E</color>
+    <color name="colorSurfaceVariant">#F0F4FF</color>
+    <color name="colorOnSurfaceVariant">#44474F</color>
+
+    <!-- ===== ERROR ===== -->
+    <color name="colorError">#BA1A1A</color>
+    <color name="colorOnError">#FFFFFF</color>
+
+    <!-- ===== OUTLINE ===== -->
+    <color name="colorOutline">#74777F</color>
+    <color name="colorOutlineVariant">#C4C6D0</color>
+
+    <!-- ===== STATUS & NAV BAR ===== -->
+    <color name="colorStatusBar">#F8FAFF</color>
+    <color name="colorNavigationBar">#F8FAFF</color>
+
+    <!-- ===== SEMANTIC ===== -->
+    <color name="colorDivider">#EEEEEE</color>
+    <color name="colorShimmerBase">#E0E0E0</color>
+    <color name="colorShimmerHighlight">#F5F5F5</color>
+    <color name="colorBookmarkActive">#FFD600</color>
+    <color name="colorBookmarkInactive">#9E9E9E</color>
+    <color name="colorCategoryTag">#E3F2FD</color>
+    <color name="colorCategoryTagText">#1565C0</color>
+    <color name="colorScrim">#99000000</color>
+    <color name="colorTransparent">#00000000</color>
+
+    <!-- ===== SPLASH ===== -->
+    <color name="colorSplashBackground">#F8FAFF</color>
+    <color name="colorSplashIcon">#1565C0</color>
+
+    <!-- ===== TOOLBAR ===== -->
+    <color name="colorToolbarBackground">#F8FAFF</color>
+    <color name="colorToolbarTitle">#1A1C1E</color>
+
+    <!-- ===== BOTTOM NAV ===== -->
+    <color name="colorBottomNavBackground">#FFFFFF</color>
+
+    <!-- ===== MISC ===== -->
     <color name="white">#FFFFFF</color>
-
-    <color name="background">#FFFFFF</color>
-    <color name="surface">#F8FAFC</color>
-
-    <color name="text_primary">#0F172A</color>
-    <color name="text_secondary">#64748B</color>
-
-    <color name="status_bar">#0A84FF</color>
+    <color name="black">#000000</color>
 
 </resources>

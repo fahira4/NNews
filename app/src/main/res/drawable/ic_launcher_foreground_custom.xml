@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Menggunakan logo NNews dan memperbesar ukurannya menjadi 88dp (default biasanya ~72dp) -->
+    <item
+        android:drawable="@drawable/ic_nnews_light"
+        android:gravity="center"
+        android:width="88dp"
+        android:height="88dp" />
+</layer-list>

@@ -1,4 +1,4 @@
-package com.example.nnews.ui.main;
+package com.example.nnews.main;
 
 import android.os.Bundle;
 

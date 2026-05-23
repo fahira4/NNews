@@ -1,21 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
-    <style name="Theme.NNews" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.NNews" parent="Theme.Material3.DayNight.NoActionBar">
 
-        <!-- Primary Colors -->
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorPrimary">@color/colorPrimaryBrand</item>
+        <item name="colorOnPrimary">@color/colorOnPrimaryBrand</item>
+        <item name="colorPrimaryContainer">@color/colorPrimaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/colorOnPrimaryContainer</item>
 
-        <!-- Background -->
-        <item name="android:windowBackground">@color/background</item>
+        <item name="colorSecondary">@color/colorSecondaryBrand</item>
+        <item name="colorOnSecondary">@color/colorOnSecondaryBrand</item>
+        <item name="colorSecondaryContainer">@color/colorSecondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/colorOnSecondaryContainer</item>
 
-        <!-- Status Bar -->
-        <item name="android:statusBarColor">@color/status_bar</item>
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="colorOnBackground">@color/colorOnBackground</item>
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+        <item name="colorSurfaceVariant">@color/colorSurfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/colorOnSurfaceVariant</item>
 
-        <!-- Status Bar Icon Color -->
+        <item name="colorError">@color/colorError</item>
+        <item name="colorOnError">@color/colorOnError</item>
+        <item name="colorOutline">@color/colorOutline</item>
+
+        <item name="android:statusBarColor">@color/colorStatusBar</item>
+        <item name="android:navigationBarColor">@color/colorNavigationBar</item>
         <item name="android:windowLightStatusBar">false</item>
 
+    </style>
+
+    <style name="Theme.NNews" parent="Base.Theme.NNews" />
+
+    <style name="Theme.NNews.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/colorSplashBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_nnews_dark</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/colorSplashBackground</item>
+        <item name="postSplashScreenTheme">@style/Theme.NNews</item>
+    </style>
+
+    <style name="Widget.NNews.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@color/colorToolbarBackground</item>
+        <item name="titleTextColor">@color/colorToolbarTitle</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+
+    <style name="Widget.NNews.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">@dimen/radius_md</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="cardBackgroundColor">@color/colorSurface</item>
+    </style>
+
+    <style name="Widget.NNews.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">@color/colorBottomNavBackground</item>
     </style>
 
 </resources>

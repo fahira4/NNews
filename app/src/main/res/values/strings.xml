@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">NNews</string>
+    <!-- Accessibility -->
+    <string name="content_desc_logo">NNews logo</string>
+    <string name="content_desc_news_image">News article image</string>
+    <string name="content_desc_back">Go back</string>
+    <string name="content_desc_bookmark_icon">Bookmark icon</string>
+    <string name="content_desc_search_icon">Search icon</string>
 </resources>
