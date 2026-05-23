@@ -1,5 +1,6 @@
 package com.example.nnews.data.model;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -14,8 +15,9 @@ import com.google.gson.annotations.SerializedName;
 public class Article {
 
     @PrimaryKey
+    @NonNull
     @SerializedName("url")
-    private String url;
+    private String url = "";
 
     @SerializedName("title")
     private String title;
@@ -41,6 +43,7 @@ public class Article {
 
     // ===== Getter =====
 
+    @NonNull
     public String getUrl() { return url; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
@@ -49,9 +52,9 @@ public class Article {
     public String getPublishedAt() { return publishedAt; }
     public Source getSource() { return source; }
 
-    // ===== Setter (diperlukan Room) =====
+    // ===== Setter =====
 
-    public void setUrl(String url) { this.url = url; }
+    public void setUrl(@NonNull String url) { this.url = url; }
     public void setTitle(String title) { this.title = title; }
     public void setDescription(String description) { this.description = description; }
     public void setContent(String content) { this.content = content; }
@@ -61,7 +64,6 @@ public class Article {
 
     /**
      * Inner class untuk data source berita.
-     * GNews mengembalikan source sebagai object.
      */
     public static class Source {
 

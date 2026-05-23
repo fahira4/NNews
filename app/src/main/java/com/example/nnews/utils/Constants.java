@@ -59,4 +59,7 @@ public final class Constants {
     public static final int CACHE_SIZE_MB = 10;
     public static final int CACHE_MAX_AGE = 5;
     public static final int CACHE_MAX_STALE = 60 * 60 * 24 * 7;
+    public static final String ERROR_NO_INTERNET = "NO_INTERNET";
+    public static final String ERROR_GENERIC = "Something went wrong";
+    public static final String ERROR_EMPTY = "No articles found";
 }

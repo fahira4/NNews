@@ -4,7 +4,11 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class GnewsResponse {
+/**
+ * Model response dari GNews API.
+ */
+public class GNewsResponse {
+
     @SerializedName("totalArticles")
     private int totalArticles;
 

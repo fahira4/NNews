@@ -1,6 +1,6 @@
 package com.example.nnews.data.remote;
 
-import com.example.nnews.data.model.GnewsResponse;
+import com.example.nnews.data.model.GNewsResponse;
 import com.example.nnews.utils.Constants;
 
 import retrofit2.Call;
@@ -23,7 +23,7 @@ public interface NewsApiService {
      * @param max      Jumlah artikel per request (max 10 untuk free tier)
      */
     @GET(Constants.ENDPOINT_TOP_HEADLINES)
-    Call<GnewsResponse> getTopHeadlines(
+    Call<GNewsResponse> getTopHeadlines(
             @Query(Constants.PARAM_CATEGORY) String category,
             @Query(Constants.PARAM_LANG) String lang,
             @Query(Constants.PARAM_COUNTRY) String country,
@@ -39,7 +39,7 @@ public interface NewsApiService {
      * @param max     Jumlah artikel
      */
     @GET(Constants.ENDPOINT_SEARCH)
-    Call<GnewsResponse> searchNews(
+    Call<GNewsResponse> searchNews(
             @Query(Constants.PARAM_QUERY) String query,
             @Query(Constants.PARAM_LANG) String lang,
             @Query(Constants.PARAM_COUNTRY) String country,
