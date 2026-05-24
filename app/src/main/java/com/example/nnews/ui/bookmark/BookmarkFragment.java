@@ -56,7 +56,7 @@ public class BookmarkFragment extends Fragment {
     private void setupViewModel() {
         NewsViewModelFactory factory =
                 new NewsViewModelFactory(requireContext());
-        viewModel = new ViewModelProvider(this, factory)
+        viewModel = new ViewModelProvider(requireActivity(), factory)
                 .get(NewsViewModel.class);
     }
 

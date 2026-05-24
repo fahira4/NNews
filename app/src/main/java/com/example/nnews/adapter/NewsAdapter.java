@@ -14,18 +14,20 @@ import com.example.nnews.R;
 import com.example.nnews.data.model.Article;
 import com.example.nnews.databinding.ItemNewsBinding;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * RecyclerView Adapter untuk daftar berita.
- * Menggunakan ListAdapter + DiffUtil untuk performa optimal —
- * hanya item yang berubah yang di-redraw.
+ * Menggunakan ListAdapter + DiffUtil untuk performa optimal.
  */
 public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder> {
 
     private OnArticleClickListener listener;
 
-    /**
-     * Interface callback untuk click event.
-     */
+    // Set URL artikel yang sudah di-bookmark
+    private Set<String> bookmarkedUrls = new HashSet<>();
+
     public interface OnArticleClickListener {
         void onArticleClick(Article article);
         void onBookmarkClick(Article article, boolean isBookmarked);
@@ -39,23 +41,30 @@ public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder
         this.listener = listener;
     }
 
-    // DiffUtil — membandingkan item lama dan baru secara efisien
+    /**
+     * Update set URL yang di-bookmark.
+     * Dipanggil dari Fragment saat observe bookmarks berubah.
+     */
+    public void setBookmarkedUrls(Set<String> urls) {
+        this.bookmarkedUrls = urls;
+        notifyDataSetChanged();
+    }
+
     private static final DiffUtil.ItemCallback<Article> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<Article>() {
                 @Override
                 public boolean areItemsTheSame(@NonNull Article oldItem,
                                                @NonNull Article newItem) {
-                    // Item sama jika URL sama
                     return oldItem.getUrl().equals(newItem.getUrl());
                 }
 
                 @Override
                 public boolean areContentsTheSame(@NonNull Article oldItem,
                                                   @NonNull Article newItem) {
-                    // Konten sama jika title dan description sama
                     return oldItem.getUrl().equals(newItem.getUrl())
                             && safeEquals(oldItem.getTitle(), newItem.getTitle())
-                            && safeEquals(oldItem.getDescription(), newItem.getDescription());
+                            && safeEquals(oldItem.getDescription(),
+                            newItem.getDescription());
                 }
 
                 private boolean safeEquals(String a, String b) {
@@ -67,7 +76,8 @@ public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder
 
     @NonNull
     @Override
-    public NewsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public NewsViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
+                                             int viewType) {
         ItemNewsBinding binding = ItemNewsBinding.inflate(
                 LayoutInflater.from(parent.getContext()),
                 parent,
@@ -78,7 +88,9 @@ public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull NewsViewHolder holder, int position) {
-        holder.bind(getItem(position));
+        Article article = getItem(position);
+        boolean isBookmarked = bookmarkedUrls.contains(article.getUrl());
+        holder.bind(article, isBookmarked);
     }
 
     // ===================================================
@@ -95,7 +107,9 @@ public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder
             this.binding = binding;
         }
 
-        public void bind(Article article) {
+        public void bind(Article article, boolean isBookmarked) {
+            this.bookmarked = isBookmarked;
+
             // Title
             binding.tvTitle.setText(article.getTitle());
 
@@ -115,13 +129,15 @@ public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder
                 binding.tvSource.setText(R.string.label_source);
             }
 
-            // Published date — ambil 10 karakter pertama (YYYY-MM-DD)
+            // Date
             if (article.getPublishedAt() != null
                     && article.getPublishedAt().length() >= 10) {
-                binding.tvDate.setText(article.getPublishedAt().substring(0, 10));
+                binding.tvDate.setText(
+                        article.getPublishedAt().substring(0, 10)
+                );
             }
 
-            // Thumbnail image
+            // Thumbnail
             Glide.with(binding.getRoot().getContext())
                     .load(article.getImage())
                     .transition(DrawableTransitionOptions.withCrossFade())
@@ -130,7 +146,10 @@ public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder
                     .centerCrop()
                     .into(binding.ivThumbnail);
 
-            // Click listener — buka detail
+            // Bookmark icon state
+            updateBookmarkIcon(isBookmarked);
+
+            // Click — buka detail
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onArticleClick(article);
@@ -139,17 +158,12 @@ public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder
 
             // Bookmark click
             binding.btnBookmark.setOnClickListener(v -> {
-                bookmarked = !bookmarked;
-                updateBookmarkIcon(bookmarked);
+                this.bookmarked = !this.bookmarked;
+                updateBookmarkIcon(this.bookmarked);
                 if (listener != null) {
-                    listener.onBookmarkClick(article, bookmarked);
+                    listener.onBookmarkClick(article, this.bookmarked);
                 }
             });
-        }
-
-        public void setBookmarked(boolean isBookmarked) {
-            this.bookmarked = isBookmarked;
-            updateBookmarkIcon(isBookmarked);
         }
 
         private void updateBookmarkIcon(boolean isBookmarked) {

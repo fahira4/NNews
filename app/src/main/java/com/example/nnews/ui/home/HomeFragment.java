@@ -21,7 +21,8 @@ import com.example.nnews.databinding.FragmentHomeBinding;
 import com.example.nnews.utils.Constants;
 import com.example.nnews.viewmodel.NewsViewModel;
 import com.example.nnews.viewmodel.NewsViewModelFactory;
-
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
@@ -49,6 +50,7 @@ public class HomeFragment extends Fragment {
         setupSearchView();
         setupSwipeRefresh();
         observeNews();
+        observeBookmarks();
     }
 
     // ===================================================
@@ -58,7 +60,8 @@ public class HomeFragment extends Fragment {
     private void setupViewModel() {
         NewsViewModelFactory factory =
                 new NewsViewModelFactory(requireContext());
-        viewModel = new ViewModelProvider(this, factory)
+        // Gunakan activityViewModels agar shared dengan DetailFragment
+        viewModel = new ViewModelProvider(requireActivity(), factory)
                 .get(NewsViewModel.class);
     }
 
@@ -159,6 +162,20 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    private void observeBookmarks() {
+        viewModel.getBookmarks().observe(getViewLifecycleOwner(), bookmarks -> {
+            if (bookmarks != null) {
+                Set<String> urls = new HashSet<>();
+                for (Article article : bookmarks) {
+                    if (article.getUrl() != null) {
+                        urls.add(article.getUrl());
+                    }
+                }
+                adapter.setBookmarkedUrls(urls);
+            }
+        });
+    }
+
     private void observeSearch() {
         viewModel.getSearchResults().observe(getViewLifecycleOwner(), result -> {
             if (result == null) return;
@@ -239,7 +256,7 @@ public class HomeFragment extends Fragment {
     // ===================================================
 
     private void navigateToDetail(Article article) {
-        // Simpan artikel ke ViewModel sebelum navigate
+        // Set artikel ke ViewModel SEBELUM navigate
         viewModel.setSelectedArticle(article);
 
         HomeFragmentDirections.ActionHomeToDetail action =

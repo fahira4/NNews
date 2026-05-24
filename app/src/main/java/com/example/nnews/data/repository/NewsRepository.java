@@ -1,8 +1,6 @@
 package com.example.nnews.data.repository;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -17,6 +15,9 @@ import com.example.nnews.utils.Constants;
 import com.example.nnews.utils.NetworkUtils;
 import com.example.nnews.utils.Result;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,8 +31,8 @@ import retrofit2.Response;
  *
  * Aturan:
  * - Ada internet → fetch dari API → cache ke Room
- * - Tidak ada internet → ambil dari Room cache
- * - Bookmark → selalu dari Room
+ * - Tidak ada internet → return error NO_INTERNET
+ * - Bookmark → selalu dari Room Database
  */
 public class NewsRepository {
 
@@ -41,17 +42,15 @@ public class NewsRepository {
     private final NewsDatabase database;
     private final Context context;
 
-    // Background thread executor untuk operasi database
     private final ExecutorService executor = Executors.newFixedThreadPool(2);
-
-    // Handler untuk post result ke Main thread
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private NewsRepository(Context context) {
         this.context = context.getApplicationContext();
+
         NewsApiService apiService = NetworkClient
                 .getInstance(context)
                 .createService(NewsApiService.class);
+
         this.remoteDataSource = new RemoteDataSource(apiService);
         this.database = NewsDatabase.getInstance(context);
     }
@@ -71,50 +70,45 @@ public class NewsRepository {
     // TOP HEADLINES
     // ===================================================
 
-    /**
-     * Ambil top headlines.
-     * Online: dari API. Offline: dari cache Room.
-     */
     public LiveData<Result<List<Article>>> getTopHeadlines(String category) {
         MutableLiveData<Result<List<Article>>> result = new MutableLiveData<>();
 
-        // Set loading state
         result.setValue(Result.loading());
 
-        if (NetworkUtils.isNetworkAvailable(context)) {
-            // Fetch dari API
-            remoteDataSource.getTopHeadlines(category)
-                    .enqueue(new Callback<GNewsResponse>() {
-                        @Override
-                        public void onResponse(Call<GNewsResponse> call,
-                                               Response<GNewsResponse> response) {
-                            if (response.isSuccessful()
-                                    && response.body() != null
-                                    && response.body().getArticles() != null) {
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            result.setValue(Result.error(Constants.ERROR_NO_INTERNET));
+            return result;
+        }
 
-                                List<Article> articles = response.body().getArticles();
-                                result.postValue(Result.success(articles));
+        remoteDataSource.getTopHeadlines(category)
+                .enqueue(new Callback<GNewsResponse>() {
+                    @Override
+                    public void onResponse(
+                            @androidx.annotation.NonNull Call<GNewsResponse> call,
+                            @androidx.annotation.NonNull Response<GNewsResponse> response) {
 
-                            } else {
-                                result.postValue(Result.error(
-                                        "Failed to load news: " + response.code()
-                                ));
-                            }
-                        }
+                        if (response.isSuccessful()
+                                && response.body() != null
+                                && response.body().getArticles() != null) {
 
-                        @Override
-                        public void onFailure(Call<GNewsResponse> call, Throwable t) {
+                            result.postValue(
+                                    Result.success(response.body().getArticles())
+                            );
+
+                        } else {
                             result.postValue(Result.error(
-                                    t.getMessage() != null
-                                            ? t.getMessage()
-                                            : "Network error occurred"
+                                    "Failed to load news. Code: " + response.code()
                             ));
                         }
-                    });
-        } else {
-            // Tidak ada internet — return error dengan pesan offline
-            result.setValue(Result.error(Constants.ERROR_NO_INTERNET));
-        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            @androidx.annotation.NonNull Call<GNewsResponse> call,
+                            @androidx.annotation.NonNull Throwable t) {
+                        result.postValue(Result.error(parseErrorMessage(t)));
+                    }
+                });
 
         return result;
     }
@@ -125,40 +119,43 @@ public class NewsRepository {
 
     public LiveData<Result<List<Article>>> searchNews(String query) {
         MutableLiveData<Result<List<Article>>> result = new MutableLiveData<>();
+
         result.setValue(Result.loading());
 
-        if (NetworkUtils.isNetworkAvailable(context)) {
-            remoteDataSource.searchNews(query)
-                    .enqueue(new Callback<GNewsResponse>() {
-                        @Override
-                        public void onResponse(Call<GNewsResponse> call,
-                                               Response<GNewsResponse> response) {
-                            if (response.isSuccessful()
-                                    && response.body() != null
-                                    && response.body().getArticles() != null) {
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            result.setValue(Result.error(Constants.ERROR_NO_INTERNET));
+            return result;
+        }
 
-                                result.postValue(Result.success(
-                                        response.body().getArticles()
-                                ));
-                            } else {
-                                result.postValue(Result.error(
-                                        "Search failed: " + response.code()
-                                ));
-                            }
-                        }
+        remoteDataSource.searchNews(query)
+                .enqueue(new Callback<GNewsResponse>() {
+                    @Override
+                    public void onResponse(
+                            @androidx.annotation.NonNull Call<GNewsResponse> call,
+                            @androidx.annotation.NonNull Response<GNewsResponse> response) {
 
-                        @Override
-                        public void onFailure(Call<GNewsResponse> call, Throwable t) {
+                        if (response.isSuccessful()
+                                && response.body() != null
+                                && response.body().getArticles() != null) {
+
+                            result.postValue(
+                                    Result.success(response.body().getArticles())
+                            );
+
+                        } else {
                             result.postValue(Result.error(
-                                    t.getMessage() != null
-                                            ? t.getMessage()
-                                            : "Network error occurred"
+                                    "Search failed. Code: " + response.code()
                             ));
                         }
-                    });
-        } else {
-            result.setValue(Result.error(Constants.ERROR_NO_INTERNET));
-        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            @androidx.annotation.NonNull Call<GNewsResponse> call,
+                            @androidx.annotation.NonNull Throwable t) {
+                        result.postValue(Result.error(parseErrorMessage(t)));
+                    }
+                });
 
         return result;
     }
@@ -185,5 +182,26 @@ public class NewsRepository {
 
     public LiveData<Boolean> isBookmarked(String url) {
         return database.newsDao().isBookmarked(url);
+    }
+
+    // ===================================================
+    // HELPER
+    // ===================================================
+
+    /**
+     * Parse error message yang user-friendly
+     * berdasarkan tipe exception yang terjadi.
+     */
+    private String parseErrorMessage(Throwable t) {
+        if (t instanceof UnknownHostException) {
+            return Constants.ERROR_NO_INTERNET;
+        } else if (t instanceof SocketTimeoutException) {
+            return "Connection timed out. Please try again.";
+        } else if (t instanceof IOException) {
+            return Constants.ERROR_NO_INTERNET;
+        }
+        return t.getMessage() != null
+                ? t.getMessage()
+                : Constants.ERROR_GENERIC;
     }
 }

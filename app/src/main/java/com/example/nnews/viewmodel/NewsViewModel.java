@@ -149,4 +149,13 @@ public class NewsViewModel extends ViewModel {
     public LiveData<Boolean> getIsLoading() {
         return isLoading;
     }
+
+    /**
+     * Ambil nilai selectedArticle secara sinkron (bukan LiveData).
+     * Digunakan di DetailFragment untuk langsung ambil data
+     * tanpa harus observe.
+     */
+    public Article getSelectedArticleValue() {
+        return selectedArticle.getValue();
+    }
 }

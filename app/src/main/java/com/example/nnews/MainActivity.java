@@ -19,55 +19,55 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Wajib sebelum super.onCreate
         SplashScreen.installSplashScreen(this);
-
         super.onCreate(savedInstanceState);
 
-        // Apply saved theme
         ThemeUtils.applySavedTheme(this);
 
-        // ViewBinding
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Setup Navigation
         setupNavigation();
     }
 
     private void setupNavigation() {
-        // Ambil NavController dari NavHostFragment
-        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.nav_host_fragment);
+        NavHostFragment navHostFragment = (NavHostFragment)
+                getSupportFragmentManager()
+                        .findFragmentById(R.id.nav_host_fragment);
 
         if (navHostFragment != null) {
             navController = navHostFragment.getNavController();
-
-            // Hubungkan BottomNav dengan NavController
             NavigationUI.setupWithNavController(
                     binding.bottomNavigation,
                     navController
             );
         }
 
-        // Sembunyikan bottom nav di detail screen
-        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-            if (destination.getId() == R.id.detailFragment) {
-                binding.bottomNavigation.setVisibility(View.GONE);
-            } else {
-                binding.bottomNavigation.setVisibility(View.VISIBLE);
-            }
-        });
+        if (navController != null) {
+            navController.addOnDestinationChangedListener(
+                    (controller, destination, arguments) -> {
+                        if (destination.getId() == R.id.detailFragment) {
+                            binding.bottomNavigation.setVisibility(View.GONE);
+                        } else {
+                            binding.bottomNavigation.setVisibility(View.VISIBLE);
+                        }
+                    });
+        }
     }
 
     @Override
     public boolean onSupportNavigateUp() {
-        return navController.navigateUp() || super.onSupportNavigateUp();
+        if (navController != null) {
+            return navController.navigateUp()
+                    || super.onSupportNavigateUp();
+        }
+        return super.onSupportNavigateUp();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        navController = null;
         binding = null;
     }
 }
