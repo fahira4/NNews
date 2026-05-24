@@ -40,4 +40,16 @@
     <string name="msg_error_generic">Something went wrong. Please try again.</string>
     <string name="msg_bookmarked">Article bookmarked.</string>
     <string name="msg_bookmark_removed">Bookmark removed.</string>
+    <string name="label_my_bookmarks">My Bookmarks</string>
+    <string name="label_bookmark_empty">No bookmarks yet.</string>
+    <string name="msg_cache_cleared">Cache cleared successfully.</string>
+
+    <string name="app_tagline">Stay updated with the latest news everyday</string>
+
+    <string name="label_dark_mode">Dark Mode</string>
+    <string name="label_dark_mode_desc">Enable dark theme for a more comfortable viewing experience at night</string>
+    <string name="label_clear_cache">Clear Cache</string>
+    <string name="label_clear_cache_desc">Remove temporary data to free up storage and improve performance</string>
+    <string name="label_version">Version</string>
+    <string name="label_about">About</string>
 </resources>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_lg">
+
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/ic_nnews_light"
+        android:contentDescription="@string/content_desc_logo"
+        android:layout_marginBottom="@dimen/spacing_md" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="@dimen/text_xxl"
+        android:textStyle="bold"
+        android:textColor="@color/colorOnBackground"
+        android:layout_marginBottom="@dimen/spacing_xs" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_tagline"
+        android:textSize="@dimen/text_md"
+        android:textColor="@color/colorOnSurfaceVariant"
+        android:layout_marginBottom="@dimen/spacing_md" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorDivider"
+        android:layout_marginBottom="@dimen/spacing_md" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Powered by GNews API"
+        android:textSize="@dimen/text_sm"
+        android:textColor="@color/colorOnSurfaceVariant"
+        android:layout_marginBottom="@dimen/spacing_xs" />
+
+    <TextView
+        android:id="@+id/tv_dialog_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_sm"
+        android:textColor="@color/colorOnSurfaceVariant" />
+
+</LinearLayout>
