@@ -30,8 +30,6 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
     private NewsViewModel viewModel;
     private NewsAdapter adapter;
-
-    // Debounce 500ms — tunggu user berhenti ketik
     private DebounceUtils debounce;
 
     @Nullable
@@ -58,6 +56,7 @@ public class HomeFragment extends Fragment {
         observeHeadlines();
         observeSearchResults();
         observeBookmarks();
+        observeSearchMode();
     }
 
     // ===================================================
@@ -99,7 +98,7 @@ public class HomeFragment extends Fragment {
                 (group, checkedIds) -> {
                     if (checkedIds.isEmpty()) return;
 
-                    // Jangan filter category saat search aktif
+                    // Jangan ganti category saat search aktif
                     if (viewModel.isCurrentlySearching()) return;
 
                     int chipId = checkedIds.get(0);
@@ -114,7 +113,7 @@ public class HomeFragment extends Fragment {
 
                     @Override
                     public boolean onQueryTextSubmit(String query) {
-                        // Batalkan debounce & langsung search
+                        // Batalkan debounce → langsung search
                         debounce.cancel();
                         if (query != null && !query.trim().isEmpty()) {
                             viewModel.searchNews(query.trim());
@@ -129,8 +128,9 @@ public class HomeFragment extends Fragment {
                             // Query kosong → kembali ke headlines
                             debounce.cancel();
                             viewModel.clearSearch();
+                            viewModel.refreshHeadlines();
                         } else if (newText.trim().length() >= 2) {
-                            // Minimal 2 huruf baru trigger search
+                            // Minimal 2 huruf → debounce search
                             debounce.debounce(() ->
                                     viewModel.searchNews(newText.trim())
                             );
@@ -139,10 +139,11 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
-        // Handle saat search view ditutup (X button)
+        // Handle tombol X di search view
         binding.searchView.setOnCloseListener(() -> {
             debounce.cancel();
             viewModel.clearSearch();
+            viewModel.refreshHeadlines();
             return false;
         });
     }
@@ -153,7 +154,14 @@ public class HomeFragment extends Fragment {
         );
         binding.swipeRefresh.setOnRefreshListener(() -> {
             if (viewModel.isCurrentlySearching()) {
-                binding.swipeRefresh.setRefreshing(false);
+                // Refresh search dengan query yang sama
+                String query = binding.searchView
+                        .getQuery().toString().trim();
+                if (!query.isEmpty()) {
+                    viewModel.searchNews(query);
+                } else {
+                    binding.swipeRefresh.setRefreshing(false);
+                }
             } else {
                 viewModel.refreshHeadlines();
             }
@@ -167,7 +175,7 @@ public class HomeFragment extends Fragment {
     private void observeHeadlines() {
         viewModel.getTopHeadlines().observe(
                 getViewLifecycleOwner(), result -> {
-                    // Hanya tampilkan jika tidak dalam mode search
+                    // Skip jika sedang search
                     if (viewModel.isCurrentlySearching()) return;
                     if (result == null) return;
 
@@ -197,7 +205,7 @@ public class HomeFragment extends Fragment {
     private void observeSearchResults() {
         viewModel.getSearchResults().observe(
                 getViewLifecycleOwner(), result -> {
-                    // Hanya tampilkan jika dalam mode search
+                    // Skip jika tidak sedang search
                     if (!viewModel.isCurrentlySearching()) return;
                     if (result == null) return;
 
@@ -239,16 +247,15 @@ public class HomeFragment extends Fragment {
                 });
     }
 
-    // Observe isSearchMode agar UI reaktif
     private void observeSearchMode() {
         viewModel.getIsSearchMode().observe(
                 getViewLifecycleOwner(), isSearchMode -> {
-                    if (isSearchMode != null && !isSearchMode) {
-                        // Kembali ke headlines
-                        binding.scrollCategories.setVisibility(View.VISIBLE);
-                    } else {
-                        // Sembunyikan categories saat search
+                    if (isSearchMode != null && isSearchMode) {
+                        // Search AKTIF → sembunyikan categories
                         binding.scrollCategories.setVisibility(View.GONE);
+                    } else {
+                        // Search TIDAK aktif → tampilkan categories
+                        binding.scrollCategories.setVisibility(View.VISIBLE);
                     }
                 });
     }
@@ -362,7 +369,6 @@ public class HomeFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Batalkan semua pending debounce
         if (debounce != null) {
             debounce.cancel();
         }
