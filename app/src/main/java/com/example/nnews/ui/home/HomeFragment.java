@@ -8,8 +8,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,17 +17,22 @@ import com.example.nnews.adapter.NewsAdapter;
 import com.example.nnews.data.model.Article;
 import com.example.nnews.databinding.FragmentHomeBinding;
 import com.example.nnews.utils.Constants;
+import com.example.nnews.utils.DebounceUtils;
 import com.example.nnews.viewmodel.NewsViewModel;
 import com.example.nnews.viewmodel.NewsViewModelFactory;
+
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
 
 public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
     private NewsViewModel viewModel;
     private NewsAdapter adapter;
+
+    // Debounce 500ms — tunggu user berhenti ketik
+    private DebounceUtils debounce;
 
     @Nullable
     @Override
@@ -41,15 +44,19 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        debounce = new DebounceUtils(500);
 
         setupViewModel();
         setupRecyclerView();
         setupCategoryChips();
         setupSearchView();
         setupSwipeRefresh();
-        observeNews();
+        observeHeadlines();
+        observeSearchResults();
         observeBookmarks();
     }
 
@@ -60,7 +67,6 @@ public class HomeFragment extends Fragment {
     private void setupViewModel() {
         NewsViewModelFactory factory =
                 new NewsViewModelFactory(requireContext());
-        // Gunakan activityViewModels agar shared dengan DetailFragment
         viewModel = new ViewModelProvider(requireActivity(), factory)
                 .get(NewsViewModel.class);
     }
@@ -73,24 +79,28 @@ public class HomeFragment extends Fragment {
         binding.rvNews.setAdapter(adapter);
         binding.rvNews.setHasFixedSize(false);
 
-        // Handle article click → navigasi ke Detail
-        adapter.setOnArticleClickListener(new NewsAdapter.OnArticleClickListener() {
-            @Override
-            public void onArticleClick(Article article) {
-                navigateToDetail(article);
-            }
+        adapter.setOnArticleClickListener(
+                new NewsAdapter.OnArticleClickListener() {
+                    @Override
+                    public void onArticleClick(Article article) {
+                        navigateToDetail(article);
+                    }
 
-            @Override
-            public void onBookmarkClick(Article article, boolean isBookmarked) {
-                handleBookmark(article, isBookmarked);
-            }
-        });
+                    @Override
+                    public void onBookmarkClick(Article article,
+                                                boolean isBookmarked) {
+                        handleBookmark(article, isBookmarked);
+                    }
+                });
     }
 
     private void setupCategoryChips() {
         binding.chipGroupCategory.setOnCheckedStateChangeListener(
                 (group, checkedIds) -> {
                     if (checkedIds.isEmpty()) return;
+
+                    // Jangan filter category saat search aktif
+                    if (viewModel.isCurrentlySearching()) return;
 
                     int chipId = checkedIds.get(0);
                     String category = getCategoryFromChipId(chipId);
@@ -101,8 +111,11 @@ public class HomeFragment extends Fragment {
     private void setupSearchView() {
         binding.searchView.setOnQueryTextListener(
                 new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+
                     @Override
                     public boolean onQueryTextSubmit(String query) {
+                        // Batalkan debounce & langsung search
+                        debounce.cancel();
                         if (query != null && !query.trim().isEmpty()) {
                             viewModel.searchNews(query.trim());
                         }
@@ -113,18 +126,37 @@ public class HomeFragment extends Fragment {
                     @Override
                     public boolean onQueryTextChange(String newText) {
                         if (newText == null || newText.trim().isEmpty()) {
+                            // Query kosong → kembali ke headlines
+                            debounce.cancel();
                             viewModel.clearSearch();
-                            observeNews();
+                        } else if (newText.trim().length() >= 2) {
+                            // Minimal 2 huruf baru trigger search
+                            debounce.debounce(() ->
+                                    viewModel.searchNews(newText.trim())
+                            );
                         }
-                        return false;
+                        return true;
                     }
                 });
+
+        // Handle saat search view ditutup (X button)
+        binding.searchView.setOnCloseListener(() -> {
+            debounce.cancel();
+            viewModel.clearSearch();
+            return false;
+        });
     }
 
     private void setupSwipeRefresh() {
-        binding.swipeRefresh.setColorSchemeResources(R.color.colorPrimaryBrand);
+        binding.swipeRefresh.setColorSchemeResources(
+                R.color.colorPrimaryBrand
+        );
         binding.swipeRefresh.setOnRefreshListener(() -> {
-            viewModel.refreshHeadlines();
+            if (viewModel.isCurrentlySearching()) {
+                binding.swipeRefresh.setRefreshing(false);
+            } else {
+                viewModel.refreshHeadlines();
+            }
         });
     }
 
@@ -132,77 +164,93 @@ public class HomeFragment extends Fragment {
     // OBSERVE
     // ===================================================
 
-    private void observeNews() {
-        viewModel.getTopHeadlines().observe(getViewLifecycleOwner(), result -> {
-            if (result == null) return;
+    private void observeHeadlines() {
+        viewModel.getTopHeadlines().observe(
+                getViewLifecycleOwner(), result -> {
+                    // Hanya tampilkan jika tidak dalam mode search
+                    if (viewModel.isCurrentlySearching()) return;
+                    if (result == null) return;
 
-            // Hentikan swipe refresh
-            binding.swipeRefresh.setRefreshing(false);
+                    binding.swipeRefresh.setRefreshing(false);
 
-            switch (result.getStatus()) {
-                case LOADING:
-                    showShimmer();
-                    break;
-
-                case SUCCESS:
-                    hideShimmer();
-                    List<Article> articles = result.getData();
-                    if (articles != null && !articles.isEmpty()) {
-                        showContent(articles);
-                    } else {
-                        showEmpty();
+                    switch (result.getStatus()) {
+                        case LOADING:
+                            showShimmer();
+                            break;
+                        case SUCCESS:
+                            hideShimmer();
+                            List<Article> articles = result.getData();
+                            if (articles != null && !articles.isEmpty()) {
+                                showContent(articles);
+                            } else {
+                                showEmpty();
+                            }
+                            break;
+                        case ERROR:
+                            hideShimmer();
+                            showError(result.getMessage());
+                            break;
                     }
-                    break;
+                });
+    }
 
-                case ERROR:
-                    hideShimmer();
-                    showError(result.getMessage());
-                    break;
-            }
-        });
+    private void observeSearchResults() {
+        viewModel.getSearchResults().observe(
+                getViewLifecycleOwner(), result -> {
+                    // Hanya tampilkan jika dalam mode search
+                    if (!viewModel.isCurrentlySearching()) return;
+                    if (result == null) return;
+
+                    binding.swipeRefresh.setRefreshing(false);
+
+                    switch (result.getStatus()) {
+                        case LOADING:
+                            showShimmer();
+                            break;
+                        case SUCCESS:
+                            hideShimmer();
+                            List<Article> articles = result.getData();
+                            if (articles != null && !articles.isEmpty()) {
+                                showContent(articles);
+                            } else {
+                                showEmpty();
+                            }
+                            break;
+                        case ERROR:
+                            hideShimmer();
+                            showError(result.getMessage());
+                            break;
+                    }
+                });
     }
 
     private void observeBookmarks() {
-        viewModel.getBookmarks().observe(getViewLifecycleOwner(), bookmarks -> {
-            if (bookmarks != null) {
-                Set<String> urls = new HashSet<>();
-                for (Article article : bookmarks) {
-                    if (article.getUrl() != null) {
-                        urls.add(article.getUrl());
+        viewModel.getBookmarks().observe(
+                getViewLifecycleOwner(), bookmarks -> {
+                    if (bookmarks != null) {
+                        Set<String> urls = new HashSet<>();
+                        for (Article article : bookmarks) {
+                            if (article.getUrl() != null) {
+                                urls.add(article.getUrl());
+                            }
+                        }
+                        adapter.setBookmarkedUrls(urls);
                     }
-                }
-                adapter.setBookmarkedUrls(urls);
-            }
-        });
+                });
     }
 
-    private void observeSearch() {
-        viewModel.getSearchResults().observe(getViewLifecycleOwner(), result -> {
-            if (result == null) return;
-
-            binding.swipeRefresh.setRefreshing(false);
-
-            switch (result.getStatus()) {
-                case LOADING:
-                    showShimmer();
-                    break;
-
-                case SUCCESS:
-                    hideShimmer();
-                    List<Article> articles = result.getData();
-                    if (articles != null && !articles.isEmpty()) {
-                        showContent(articles);
+    // Observe isSearchMode agar UI reaktif
+    private void observeSearchMode() {
+        viewModel.getIsSearchMode().observe(
+                getViewLifecycleOwner(), isSearchMode -> {
+                    if (isSearchMode != null && !isSearchMode) {
+                        // Kembali ke headlines
+                        binding.scrollCategories.setVisibility(View.VISIBLE);
                     } else {
-                        showEmpty();
+                        // Sembunyikan categories saat search
+                        binding.scrollCategories.setVisibility(View.GONE);
                     }
-                    break;
-
-                case ERROR:
-                    hideShimmer();
-                    showError(result.getMessage());
-                    break;
-            }
-        });
+                });
     }
 
     // ===================================================
@@ -234,15 +282,24 @@ public class HomeFragment extends Fragment {
         binding.layoutEmpty.setVisibility(View.GONE);
         binding.layoutError.setVisibility(View.VISIBLE);
 
-        if (message != null && message.equals(Constants.ERROR_NO_INTERNET)) {
+        if (message != null
+                && message.equals(Constants.ERROR_NO_INTERNET)) {
             binding.tvErrorMessage.setText(R.string.state_error_network);
         } else {
             binding.tvErrorMessage.setText(R.string.state_error);
         }
 
-        binding.btnRetry.setOnClickListener(v ->
-                viewModel.refreshHeadlines()
-        );
+        binding.btnRetry.setOnClickListener(v -> {
+            if (viewModel.isCurrentlySearching()) {
+                String query = binding.searchView
+                        .getQuery().toString().trim();
+                if (!query.isEmpty()) {
+                    viewModel.searchNews(query);
+                }
+            } else {
+                viewModel.refreshHeadlines();
+            }
+        });
     }
 
     private void showEmpty() {
@@ -256,13 +313,14 @@ public class HomeFragment extends Fragment {
     // ===================================================
 
     private void navigateToDetail(Article article) {
-        // Set artikel ke ViewModel SEBELUM navigate
         viewModel.setSelectedArticle(article);
 
         HomeFragmentDirections.ActionHomeToDetail action =
                 HomeFragmentDirections.actionHomeToDetail(
-                        article.getUrl() != null ? article.getUrl() : "",
-                        article.getTitle() != null ? article.getTitle() : ""
+                        article.getUrl() != null
+                                ? article.getUrl() : "",
+                        article.getTitle() != null
+                                ? article.getTitle() : ""
                 );
         Navigation.findNavController(requireView()).navigate(action);
     }
@@ -284,30 +342,30 @@ public class HomeFragment extends Fragment {
     // ===================================================
 
     private String getCategoryFromChipId(int chipId) {
-        if (chipId == R.id.chip_world) return Constants.CATEGORY_WORLD;
-        if (chipId == R.id.chip_technology) return Constants.CATEGORY_TECHNOLOGY;
-        if (chipId == R.id.chip_business) return Constants.CATEGORY_BUSINESS;
-        if (chipId == R.id.chip_sports) return Constants.CATEGORY_SPORTS;
-        if (chipId == R.id.chip_science) return Constants.CATEGORY_SCIENCE;
-        if (chipId == R.id.chip_health) return Constants.CATEGORY_HEALTH;
-        if (chipId == R.id.chip_entertainment) return Constants.CATEGORY_ENTERTAINMENT;
+        if (chipId == R.id.chip_world)
+            return Constants.CATEGORY_WORLD;
+        if (chipId == R.id.chip_technology)
+            return Constants.CATEGORY_TECHNOLOGY;
+        if (chipId == R.id.chip_business)
+            return Constants.CATEGORY_BUSINESS;
+        if (chipId == R.id.chip_sports)
+            return Constants.CATEGORY_SPORTS;
+        if (chipId == R.id.chip_science)
+            return Constants.CATEGORY_SCIENCE;
+        if (chipId == R.id.chip_health)
+            return Constants.CATEGORY_HEALTH;
+        if (chipId == R.id.chip_entertainment)
+            return Constants.CATEGORY_ENTERTAINMENT;
         return Constants.CATEGORY_GENERAL;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        // Batalkan semua pending debounce
+        if (debounce != null) {
+            debounce.cancel();
+        }
         binding = null;
-    }
-
-    // ===== SELECTED ARTICLE (untuk Detail Screen) =====
-    private final MutableLiveData<Article> selectedArticle = new MutableLiveData<>();
-
-    public void setSelectedArticle(Article article) {
-        selectedArticle.setValue(article);
-    }
-
-    public LiveData<Article> getSelectedArticle() {
-        return selectedArticle;
     }
 }

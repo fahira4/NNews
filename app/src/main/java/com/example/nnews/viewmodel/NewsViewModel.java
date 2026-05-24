@@ -12,30 +12,30 @@ import com.example.nnews.utils.Result;
 
 import java.util.List;
 
-/**
- * ViewModel untuk Home, Bookmark, dan Search screen.
- * Mengekspos LiveData ke Fragment — Fragment hanya observe, tidak fetch langsung.
- */
 public class NewsViewModel extends ViewModel {
 
     private final NewsRepository repository;
 
     // ===== TOP HEADLINES =====
-    private final MutableLiveData<String> selectedCategory = new MutableLiveData<>();
+    private final MutableLiveData<String> selectedCategory =
+            new MutableLiveData<>();
     private final LiveData<Result<List<Article>>> topHeadlines;
 
     // ===== SEARCH =====
-    private final MutableLiveData<String> searchQuery = new MutableLiveData<>();
+    private final MutableLiveData<String> searchQuery =
+            new MutableLiveData<>();
     private final LiveData<Result<List<Article>>> searchResults;
+
+    // ===== SEARCH MODE FLAG =====
+    private final MutableLiveData<Boolean> isSearchMode =
+            new MutableLiveData<>(false);
 
     // ===== BOOKMARK =====
     private final LiveData<List<Article>> bookmarks;
 
     // ===== SELECTED ARTICLE =====
-    private final MutableLiveData<Article> selectedArticle = new MutableLiveData<>();
-
-    // ===== LOADING STATE =====
-    private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
+    private final MutableLiveData<Article> selectedArticle =
+            new MutableLiveData<>();
 
     public NewsViewModel(NewsRepository repository) {
         this.repository = repository;
@@ -46,7 +46,7 @@ public class NewsViewModel extends ViewModel {
                 category -> repository.getTopHeadlines(category)
         );
 
-        // Search results — reactive terhadap perubahan query
+        // Search — reactive terhadap perubahan query
         searchResults = Transformations.switchMap(
                 searchQuery,
                 query -> {
@@ -56,14 +56,14 @@ public class NewsViewModel extends ViewModel {
                         empty.setValue(Result.success(null));
                         return empty;
                     }
-                    return repository.searchNews(query);
+                    return repository.searchNews(query.trim());
                 }
         );
 
-        // Bookmarks — selalu dari Room
+        // Bookmarks
         bookmarks = repository.getAllBookmarks();
 
-        // Load default category saat pertama kali
+        // Load default
         selectedCategory.setValue(Constants.DEFAULT_CATEGORY);
     }
 
@@ -76,14 +76,12 @@ public class NewsViewModel extends ViewModel {
     }
 
     public void setCategory(String category) {
-        // Hanya trigger reload jika category berbeda
         if (!category.equals(selectedCategory.getValue())) {
             selectedCategory.setValue(category);
         }
     }
 
     public void refreshHeadlines() {
-        // Force refresh dengan category yang sama
         String current = selectedCategory.getValue();
         selectedCategory.setValue(current);
     }
@@ -103,11 +101,26 @@ public class NewsViewModel extends ViewModel {
     }
 
     public void searchNews(String query) {
-        searchQuery.setValue(query);
+        if (query != null && !query.trim().isEmpty()) {
+            isSearchMode.setValue(true);
+            searchQuery.setValue(query.trim());
+        } else {
+            clearSearch();
+        }
     }
 
     public void clearSearch() {
+        isSearchMode.setValue(false);
         searchQuery.setValue("");
+    }
+
+    public LiveData<Boolean> getIsSearchMode() {
+        return isSearchMode;
+    }
+
+    public boolean isCurrentlySearching() {
+        Boolean val = isSearchMode.getValue();
+        return val != null && val;
     }
 
     // ===================================================
@@ -142,19 +155,6 @@ public class NewsViewModel extends ViewModel {
         return selectedArticle;
     }
 
-    // ===================================================
-    // LOADING STATE
-    // ===================================================
-
-    public LiveData<Boolean> getIsLoading() {
-        return isLoading;
-    }
-
-    /**
-     * Ambil nilai selectedArticle secara sinkron (bukan LiveData).
-     * Digunakan di DetailFragment untuk langsung ambil data
-     * tanpa harus observe.
-     */
     public Article getSelectedArticleValue() {
         return selectedArticle.getValue();
     }
