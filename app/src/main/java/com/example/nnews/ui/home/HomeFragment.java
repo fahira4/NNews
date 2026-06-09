@@ -46,7 +46,7 @@ public class HomeFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        debounce = new DebounceUtils(500);
+        debounce = new DebounceUtils(600);
 
         setupViewModel();
         setupRecyclerView();
@@ -55,8 +55,8 @@ public class HomeFragment extends Fragment {
         setupSwipeRefresh();
         observeHeadlines();
         observeSearchResults();
-        observeBookmarks();
         observeSearchMode();
+        observeBookmarks();
     }
 
     // ===================================================
@@ -97,8 +97,6 @@ public class HomeFragment extends Fragment {
         binding.chipGroupCategory.setOnCheckedStateChangeListener(
                 (group, checkedIds) -> {
                     if (checkedIds.isEmpty()) return;
-
-                    // Jangan ganti category saat search aktif
                     if (viewModel.isCurrentlySearching()) return;
 
                     int chipId = checkedIds.get(0);
@@ -109,13 +107,15 @@ public class HomeFragment extends Fragment {
 
     private void setupSearchView() {
         binding.searchView.setOnQueryTextListener(
-                new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+                new androidx.appcompat.widget.SearchView
+                        .OnQueryTextListener() {
 
                     @Override
                     public boolean onQueryTextSubmit(String query) {
-                        // Batalkan debounce → langsung search
+                        // Submit langsung tanpa debounce
                         debounce.cancel();
-                        if (query != null && !query.trim().isEmpty()) {
+                        if (query != null
+                                && !query.trim().isEmpty()) {
                             viewModel.searchNews(query.trim());
                         }
                         binding.searchView.clearFocus();
@@ -124,22 +124,24 @@ public class HomeFragment extends Fragment {
 
                     @Override
                     public boolean onQueryTextChange(String newText) {
-                        if (newText == null || newText.trim().isEmpty()) {
-                            // Query kosong → kembali ke headlines
+                        if (newText == null
+                                || newText.trim().isEmpty()) {
+                            // Query dikosongkan → kembali ke headlines
                             debounce.cancel();
                             viewModel.clearSearch();
                             viewModel.refreshHeadlines();
-                        } else if (newText.trim().length() >= 2) {
-                            // Minimal 2 huruf → debounce search
+                        } else {
+                            // Debounce 600ms
+                            String query = newText.trim();
                             debounce.debounce(() ->
-                                    viewModel.searchNews(newText.trim())
+                                    viewModel.searchNews(query)
                             );
                         }
                         return true;
                     }
                 });
 
-        // Handle tombol X di search view
+        // Tombol X ditekan
         binding.searchView.setOnCloseListener(() -> {
             debounce.cancel();
             viewModel.clearSearch();
@@ -154,7 +156,6 @@ public class HomeFragment extends Fragment {
         );
         binding.swipeRefresh.setOnRefreshListener(() -> {
             if (viewModel.isCurrentlySearching()) {
-                // Refresh search dengan query yang sama
                 String query = binding.searchView
                         .getQuery().toString().trim();
                 if (!query.isEmpty()) {
@@ -188,7 +189,8 @@ public class HomeFragment extends Fragment {
                         case SUCCESS:
                             hideShimmer();
                             List<Article> articles = result.getData();
-                            if (articles != null && !articles.isEmpty()) {
+                            if (articles != null
+                                    && !articles.isEmpty()) {
                                 showContent(articles);
                             } else {
                                 showEmpty();
@@ -218,7 +220,8 @@ public class HomeFragment extends Fragment {
                         case SUCCESS:
                             hideShimmer();
                             List<Article> articles = result.getData();
-                            if (articles != null && !articles.isEmpty()) {
+                            if (articles != null
+                                    && !articles.isEmpty()) {
                                 showContent(articles);
                             } else {
                                 showEmpty();
@@ -228,6 +231,21 @@ public class HomeFragment extends Fragment {
                             hideShimmer();
                             showError(result.getMessage());
                             break;
+                    }
+                });
+    }
+
+    private void observeSearchMode() {
+        viewModel.getIsSearchMode().observe(
+                getViewLifecycleOwner(), isSearchMode -> {
+                    if (isSearchMode != null && isSearchMode) {
+                        // Search aktif → sembunyikan chips
+                        binding.scrollCategories
+                                .setVisibility(View.GONE);
+                    } else {
+                        // Search tidak aktif → tampilkan chips
+                        binding.scrollCategories
+                                .setVisibility(View.VISIBLE);
                     }
                 });
     }
@@ -243,19 +261,6 @@ public class HomeFragment extends Fragment {
                             }
                         }
                         adapter.setBookmarkedUrls(urls);
-                    }
-                });
-    }
-
-    private void observeSearchMode() {
-        viewModel.getIsSearchMode().observe(
-                getViewLifecycleOwner(), isSearchMode -> {
-                    if (isSearchMode != null && isSearchMode) {
-                        // Search AKTIF → sembunyikan categories
-                        binding.scrollCategories.setVisibility(View.GONE);
-                    } else {
-                        // Search TIDAK aktif → tampilkan categories
-                        binding.scrollCategories.setVisibility(View.VISIBLE);
                     }
                 });
     }
@@ -289,9 +294,21 @@ public class HomeFragment extends Fragment {
         binding.layoutEmpty.setVisibility(View.GONE);
         binding.layoutError.setVisibility(View.VISIBLE);
 
-        if (message != null
-                && message.equals(Constants.ERROR_NO_INTERNET)) {
-            binding.tvErrorMessage.setText(R.string.state_error_network);
+        if (message == null) {
+            binding.tvErrorMessage.setText(R.string.state_error);
+
+        } else if (message.equals(Constants.ERROR_NO_INTERNET)) {
+            binding.tvErrorMessage
+                    .setText(R.string.state_error_network);
+
+        } else if (message.equals(Constants.ERROR_RATE_LIMIT)) {
+            binding.tvErrorMessage
+                    .setText(R.string.state_error_rate_limit);
+
+        } else if (message.equals(Constants.ERROR_INVALID_API_KEY)) {
+            binding.tvErrorMessage
+                    .setText(R.string.state_error_api_key);
+
         } else {
             binding.tvErrorMessage.setText(R.string.state_error);
         }
@@ -320,6 +337,8 @@ public class HomeFragment extends Fragment {
     // ===================================================
 
     private void navigateToDetail(Article article) {
+        if (article == null) return;
+
         viewModel.setSelectedArticle(article);
 
         HomeFragmentDirections.ActionHomeToDetail action =
@@ -336,7 +355,8 @@ public class HomeFragment extends Fragment {
     // BOOKMARK
     // ===================================================
 
-    private void handleBookmark(Article article, boolean isBookmarked) {
+    private void handleBookmark(Article article,
+                                boolean isBookmarked) {
         if (isBookmarked) {
             viewModel.addBookmark(article);
         } else {

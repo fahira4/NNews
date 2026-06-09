@@ -1,6 +1,7 @@
 package com.example.nnews.viewmodel;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
@@ -22,13 +23,23 @@ public class NewsViewModel extends ViewModel {
     private final LiveData<Result<List<Article>>> topHeadlines;
 
     // ===== SEARCH =====
+    // MutableLiveData query — trigger search setiap berubah
     private final MutableLiveData<String> searchQuery =
             new MutableLiveData<>();
-    private final LiveData<Result<List<Article>>> searchResults;
 
-    // ===== SEARCH MODE FLAG =====
+    // MediatorLiveData — lebih aman dari observeForever
+    private final MediatorLiveData<Result<List<Article>>> searchResults =
+            new MediatorLiveData<>();
+
+    // Track LiveData search sebelumnya agar bisa dilepas
+    private LiveData<Result<List<Article>>> lastSearchLiveData = null;
+
+    // ===== SEARCH MODE =====
     private final MutableLiveData<Boolean> isSearchMode =
             new MutableLiveData<>(false);
+
+    // ===== LAST QUERY =====
+    private String lastQuery = "";
 
     // ===== BOOKMARK =====
     private final LiveData<List<Article>> bookmarks;
@@ -40,30 +51,20 @@ public class NewsViewModel extends ViewModel {
     public NewsViewModel(NewsRepository repository) {
         this.repository = repository;
 
-        // Top headlines — reactive terhadap perubahan category
+        // Headlines reactive terhadap category
         topHeadlines = Transformations.switchMap(
                 selectedCategory,
-                category -> repository.getTopHeadlines(category)
-        );
-
-        // Search — reactive terhadap perubahan query
-        searchResults = Transformations.switchMap(
-                searchQuery,
-                query -> {
-                    if (query == null || query.trim().isEmpty()) {
-                        MutableLiveData<Result<List<Article>>> empty =
-                                new MutableLiveData<>();
-                        empty.setValue(Result.success(null));
-                        return empty;
+                category -> {
+                    if (category == null) {
+                        return new MutableLiveData<>();
                     }
-                    return repository.searchNews(query.trim());
+                    return repository.getTopHeadlines(category);
                 }
         );
 
-        // Bookmarks
         bookmarks = repository.getAllBookmarks();
 
-        // Load default
+        // Default category
         selectedCategory.setValue(Constants.DEFAULT_CATEGORY);
     }
 
@@ -76,13 +77,15 @@ public class NewsViewModel extends ViewModel {
     }
 
     public void setCategory(String category) {
-        if (!category.equals(selectedCategory.getValue())) {
+        if (category != null) {
             selectedCategory.setValue(category);
         }
     }
 
     public void refreshHeadlines() {
-        String current = selectedCategory.getValue();
+        String current = selectedCategory.getValue() != null
+                ? selectedCategory.getValue()
+                : Constants.DEFAULT_CATEGORY;
         selectedCategory.setValue(current);
     }
 
@@ -100,18 +103,62 @@ public class NewsViewModel extends ViewModel {
         return searchResults;
     }
 
+    /**
+     * Trigger search dengan query baru.
+     * Menggunakan MediatorLiveData agar aman dari memory leak.
+     */
     public void searchNews(String query) {
-        if (query != null && !query.trim().isEmpty()) {
-            isSearchMode.setValue(true);
-            searchQuery.setValue(query.trim());
-        } else {
+        if (query == null || query.trim().isEmpty()) {
             clearSearch();
+            return;
         }
+
+        String trimmedQuery = query.trim();
+
+        // Skip jika query sama dengan yang terakhir
+        if (trimmedQuery.equals(lastQuery)
+                && Boolean.TRUE.equals(isSearchMode.getValue())) {
+            return;
+        }
+
+        lastQuery = trimmedQuery;
+        isSearchMode.setValue(true);
+
+        // Set loading
+        searchResults.setValue(Result.loading());
+
+        // Lepas source lama dari MediatorLiveData
+        if (lastSearchLiveData != null) {
+            searchResults.removeSource(lastSearchLiveData);
+            lastSearchLiveData = null;
+        }
+
+        // Buat LiveData baru dari repository
+        LiveData<Result<List<Article>>> newSearch =
+                repository.searchNews(trimmedQuery);
+
+        lastSearchLiveData = newSearch;
+
+        // Tambahkan sebagai source baru
+        searchResults.addSource(newSearch, result -> {
+            // Hanya forward jika query masih relevan
+            if (trimmedQuery.equals(lastQuery)) {
+                searchResults.setValue(result);
+            }
+        });
     }
 
     public void clearSearch() {
+        lastQuery = "";
         isSearchMode.setValue(false);
-        searchQuery.setValue("");
+
+        // Lepas source dari MediatorLiveData
+        if (lastSearchLiveData != null) {
+            searchResults.removeSource(lastSearchLiveData);
+            lastSearchLiveData = null;
+        }
+
+        searchResults.setValue(Result.success(null));
     }
 
     public LiveData<Boolean> getIsSearchMode() {
@@ -157,5 +204,19 @@ public class NewsViewModel extends ViewModel {
 
     public Article getSelectedArticleValue() {
         return selectedArticle.getValue();
+    }
+
+    // ===================================================
+    // CLEANUP
+    // ===================================================
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        // Bersihkan semua source saat ViewModel destroyed
+        if (lastSearchLiveData != null) {
+            searchResults.removeSource(lastSearchLiveData);
+            lastSearchLiveData = null;
+        }
     }
 }

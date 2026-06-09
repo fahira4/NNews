@@ -4,8 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 
 /**
- * Utility untuk debounce — menunda eksekusi hingga
- * user berhenti mengetik selama durasi tertentu.
+ * Utility debounce — menunda eksekusi hingga user
+ * berhenti mengetik selama durasi yang ditentukan.
  */
 public class DebounceUtils {
 
@@ -19,21 +19,16 @@ public class DebounceUtils {
 
     /**
      * Jalankan runnable setelah delay.
-     * Jika dipanggil lagi sebelum delay habis,
-     * timer di-reset dari awal.
+     * Setiap kali dipanggil, timer di-reset.
      */
     public void debounce(Runnable runnable) {
-        // Batalkan runnable sebelumnya
-        if (pendingRunnable != null) {
-            handler.removeCallbacks(pendingRunnable);
-        }
+        cancel();
         pendingRunnable = runnable;
         handler.postDelayed(pendingRunnable, delayMillis);
     }
 
     /**
-     * Batalkan semua pending runnable.
-     * Panggil di onDestroyView untuk cegah memory leak.
+     * Batalkan pending runnable.
      */
     public void cancel() {
         if (pendingRunnable != null) {

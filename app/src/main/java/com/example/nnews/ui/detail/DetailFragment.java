@@ -42,7 +42,6 @@ public class DetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view,
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         setupViewModel();
         setupToolbar();
         loadArticle();
@@ -55,7 +54,6 @@ public class DetailFragment extends Fragment {
     private void setupViewModel() {
         NewsViewModelFactory factory =
                 new NewsViewModelFactory(requireContext());
-        // Shared ViewModel dengan HomeFragment via Activity scope
         viewModel = new ViewModelProvider(requireActivity(), factory)
                 .get(NewsViewModel.class);
     }
@@ -67,28 +65,20 @@ public class DetailFragment extends Fragment {
     }
 
     private void loadArticle() {
-        // Ambil argument dari Safe Args
-        DetailFragmentArgs args =
-                DetailFragmentArgs.fromBundle(getArguments());
-        String articleUrl = args.getArticleUrl();
-        String articleTitle = args.getArticleTitle();
-
-        // Tampilkan title dari args sebagai fallback
-        binding.tvTitle.setText(articleTitle);
-
-        // Ambil artikel lengkap dari shared ViewModel
+        // Coba ambil dari ViewModel dulu (data lengkap)
         Article selected = viewModel.getSelectedArticleValue();
 
-        if (selected != null
-                && selected.getUrl() != null
-                && selected.getUrl().equals(articleUrl)) {
-            // Data lengkap tersedia
+        if (selected != null) {
+            // Data lengkap tersedia — langsung display
             displayArticle(selected);
         } else {
-            // Fallback — buat article minimal dari args
+            // Fallback dari Safe Args
+            DetailFragmentArgs args =
+                    DetailFragmentArgs.fromBundle(getArguments());
+
             Article fallback = new Article();
-            fallback.setUrl(articleUrl);
-            fallback.setTitle(articleTitle);
+            fallback.setUrl(args.getArticleUrl());
+            fallback.setTitle(args.getArticleTitle());
             displayArticle(fallback);
         }
     }
@@ -101,13 +91,16 @@ public class DetailFragment extends Fragment {
         if (article == null) return;
         this.currentArticle = article;
 
-        // Title
-        if (article.getTitle() != null) {
+        // ----- TITLE -----
+        if (article.getTitle() != null
+                && !article.getTitle().isEmpty()) {
             binding.tvTitle.setText(article.getTitle());
         }
 
-        // Hero image
-        if (article.getImage() != null && !article.getImage().isEmpty()) {
+        // ----- HERO IMAGE -----
+        if (article.getImage() != null
+                && !article.getImage().isEmpty()) {
+            binding.ivHero.setVisibility(View.VISIBLE);
             Glide.with(this)
                     .load(article.getImage())
                     .transition(DrawableTransitionOptions.withCrossFade())
@@ -119,7 +112,7 @@ public class DetailFragment extends Fragment {
             binding.ivHero.setImageResource(R.drawable.ic_image_placeholder);
         }
 
-        // Source
+        // ----- SOURCE -----
         if (article.getSource() != null
                 && article.getSource().getName() != null) {
             binding.tvSource.setText(article.getSource().getName());
@@ -130,7 +123,7 @@ public class DetailFragment extends Fragment {
             binding.chipCategory.setVisibility(View.GONE);
         }
 
-        // Date
+        // ----- DATE -----
         if (article.getPublishedAt() != null
                 && article.getPublishedAt().length() >= 10) {
             binding.tvDate.setText(
@@ -140,7 +133,7 @@ public class DetailFragment extends Fragment {
             binding.tvDate.setText("-");
         }
 
-        // Description
+        // ----- DESCRIPTION -----
         if (article.getDescription() != null
                 && !article.getDescription().isEmpty()) {
             binding.tvDescription.setVisibility(View.VISIBLE);
@@ -149,24 +142,28 @@ public class DetailFragment extends Fragment {
             binding.tvDescription.setVisibility(View.GONE);
         }
 
-        // Content
+        // ----- CONTENT -----
         if (article.getContent() != null
                 && !article.getContent().isEmpty()) {
-            // Hapus "[+X chars]" di akhir konten GNews
-            String content = article.getContent()
+            // Hapus "[+X chars]" yang ditambahkan GNews
+            String cleaned = article.getContent()
                     .replaceAll("\\[\\+?\\d+ chars\\]$", "")
                     .trim();
-            binding.tvContent.setVisibility(View.VISIBLE);
-            binding.tvContent.setText(content);
+            if (!cleaned.isEmpty()) {
+                binding.tvContent.setVisibility(View.VISIBLE);
+                binding.tvContent.setText(cleaned);
+            } else {
+                binding.tvContent.setVisibility(View.GONE);
+            }
         } else {
             binding.tvContent.setVisibility(View.GONE);
         }
 
-        // Setup buttons
+        // ----- BUTTONS -----
         setupActionButtons(article.getUrl(), article.getTitle());
 
-        // Observe bookmark state
-        if (article.getUrl() != null) {
+        // ----- BOOKMARK STATE -----
+        if (article.getUrl() != null && !article.getUrl().isEmpty()) {
             observeBookmarkState(article.getUrl());
         }
     }
@@ -204,10 +201,10 @@ public class DetailFragment extends Fragment {
     private void openInBrowser(String url) {
         if (url == null || url.isEmpty()) return;
         try {
-            Intent browserIntent = new Intent(
+            Intent intent = new Intent(
                     Intent.ACTION_VIEW, Uri.parse(url)
             );
-            startActivity(browserIntent);
+            startActivity(intent);
         } catch (Exception e) {
             Toast.makeText(
                     requireContext(),
@@ -225,14 +222,18 @@ public class DetailFragment extends Fragment {
 
         if (isBookmarked) {
             viewModel.addBookmark(currentArticle);
-            Toast.makeText(requireContext(),
+            Toast.makeText(
+                    requireContext(),
                     R.string.msg_bookmarked,
-                    Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT
+            ).show();
         } else {
             viewModel.removeBookmark(currentArticle);
-            Toast.makeText(requireContext(),
+            Toast.makeText(
+                    requireContext(),
                     R.string.msg_bookmark_removed,
-                    Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT
+            ).show();
         }
     }
 

@@ -52,4 +52,6 @@
     <string name="label_clear_cache_desc">Remove temporary data to free up storage and improve performance</string>
     <string name="label_version">Version</string>
     <string name="label_about">About</string>
+    <string name="state_error_rate_limit">API limit reached. Please wait a moment and try again.</string>
+    <string name="state_error_api_key">Invalid API key. Please check your configuration.</string>
 </resources>

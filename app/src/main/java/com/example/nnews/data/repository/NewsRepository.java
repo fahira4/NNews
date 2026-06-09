@@ -2,6 +2,7 @@ package com.example.nnews.data.repository;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -30,7 +31,7 @@ import retrofit2.Response;
  * Repository — single source of truth.
  *
  * Aturan:
- * - Ada internet → fetch dari API → cache ke Room
+ * - Ada internet → fetch dari API
  * - Tidak ada internet → return error NO_INTERNET
  * - Bookmark → selalu dari Room Database
  */
@@ -41,8 +42,14 @@ public class NewsRepository {
     private final RemoteDataSource remoteDataSource;
     private final NewsDatabase database;
     private final Context context;
+    public static final String ERROR_NO_INTERNET = "NO_INTERNET";
+    public static final String ERROR_GENERIC = "Something went wrong";
+    public static final String ERROR_EMPTY = "No articles found";
+    public static final String ERROR_RATE_LIMIT = "RATE_LIMIT";
+    public static final String ERROR_INVALID_API_KEY = "INVALID_API_KEY";
 
-    private final ExecutorService executor = Executors.newFixedThreadPool(2);
+    private final ExecutorService executor =
+            Executors.newFixedThreadPool(2);
 
     private NewsRepository(Context context) {
         this.context = context.getApplicationContext();
@@ -70,8 +77,11 @@ public class NewsRepository {
     // TOP HEADLINES
     // ===================================================
 
-    public LiveData<Result<List<Article>>> getTopHeadlines(String category) {
-        MutableLiveData<Result<List<Article>>> result = new MutableLiveData<>();
+    public LiveData<Result<List<Article>>> getTopHeadlines(
+            String category) {
+
+        MutableLiveData<Result<List<Article>>> result =
+                new MutableLiveData<>();
 
         result.setValue(Result.loading());
 
@@ -84,33 +94,68 @@ public class NewsRepository {
                 .enqueue(new Callback<GNewsResponse>() {
                     @Override
                     public void onResponse(
-                            @androidx.annotation.NonNull Call<GNewsResponse> call,
-                            @androidx.annotation.NonNull Response<GNewsResponse> response) {
+                            @NonNull Call<GNewsResponse> call,
+                            @NonNull Response<GNewsResponse> response) {
 
                         if (response.isSuccessful()
                                 && response.body() != null
                                 && response.body().getArticles() != null) {
-
-                            result.postValue(
-                                    Result.success(response.body().getArticles())
-                            );
-
+                            result.postValue(Result.success(
+                                    response.body().getArticles()
+                            ));
                         } else {
+                            // Log untuk debug
+                            String errorBody = "";
+                            try {
+                                if (response.errorBody() != null) {
+                                    errorBody = response.errorBody().string();
+                                }
+                            } catch (Exception e) {
+                                errorBody = "Could not read error body";
+                            }
+
+                            android.util.Log.e("NewsRepository",
+                                    "API Error - Code: " + response.code()
+                                            + " | Body: " + errorBody);
+
                             result.postValue(Result.error(
-                                    "Failed to load news. Code: " + response.code()
+                                    parseApiError(response.code(), errorBody)
                             ));
                         }
                     }
 
                     @Override
                     public void onFailure(
-                            @androidx.annotation.NonNull Call<GNewsResponse> call,
-                            @androidx.annotation.NonNull Throwable t) {
-                        result.postValue(Result.error(parseErrorMessage(t)));
+                            @NonNull Call<GNewsResponse> call,
+                            @NonNull Throwable t) {
+                        result.postValue(
+                                Result.error(parseErrorMessage(t))
+                        );
                     }
                 });
 
         return result;
+    }
+
+    /**
+     * Parse HTTP error code menjadi pesan yang user-friendly.
+     */
+    private String parseApiError(int code, String errorBody) {
+        switch (code) {
+            case 400:
+                return "Bad request. Please try again.";
+            case 401:
+                return Constants.ERROR_INVALID_API_KEY;
+            case 403:
+                return Constants.ERROR_INVALID_API_KEY;
+            case 429:
+                return Constants.ERROR_RATE_LIMIT;
+            case 500:
+            case 503:
+                return "Server error. Please try again later.";
+            default:
+                return "Failed to load news. Code: " + code;
+        }
     }
 
     // ===================================================
@@ -118,7 +163,8 @@ public class NewsRepository {
     // ===================================================
 
     public LiveData<Result<List<Article>>> searchNews(String query) {
-        MutableLiveData<Result<List<Article>>> result = new MutableLiveData<>();
+        MutableLiveData<Result<List<Article>>> result =
+                new MutableLiveData<>();
 
         result.setValue(Result.loading());
 
@@ -127,33 +173,42 @@ public class NewsRepository {
             return result;
         }
 
-        remoteDataSource.searchNews(query)
+        // Validasi query
+        String trimmedQuery = query != null ? query.trim() : "";
+        if (trimmedQuery.isEmpty()) {
+            result.setValue(Result.success(null));
+            return result;
+        }
+
+        remoteDataSource.searchNews(trimmedQuery)
                 .enqueue(new Callback<GNewsResponse>() {
                     @Override
                     public void onResponse(
-                            @androidx.annotation.NonNull Call<GNewsResponse> call,
-                            @androidx.annotation.NonNull Response<GNewsResponse> response) {
+                            @NonNull Call<GNewsResponse> call,
+                            @NonNull Response<GNewsResponse> response) {
 
                         if (response.isSuccessful()
                                 && response.body() != null
-                                && response.body().getArticles() != null) {
-
-                            result.postValue(
-                                    Result.success(response.body().getArticles())
-                            );
-
+                                && response.body().getArticles() != null
+                                && !response.body()
+                                .getArticles().isEmpty()) {
+                            result.postValue(Result.success(
+                                    response.body().getArticles()
+                            ));
                         } else {
                             result.postValue(Result.error(
-                                    "Search failed. Code: " + response.code()
+                                    "No results for: " + trimmedQuery
                             ));
                         }
                     }
 
                     @Override
                     public void onFailure(
-                            @androidx.annotation.NonNull Call<GNewsResponse> call,
-                            @androidx.annotation.NonNull Throwable t) {
-                        result.postValue(Result.error(parseErrorMessage(t)));
+                            @NonNull Call<GNewsResponse> call,
+                            @NonNull Throwable t) {
+                        result.postValue(
+                                Result.error(parseErrorMessage(t))
+                        );
                     }
                 });
 
@@ -188,10 +243,6 @@ public class NewsRepository {
     // HELPER
     // ===================================================
 
-    /**
-     * Parse error message yang user-friendly
-     * berdasarkan tipe exception yang terjadi.
-     */
     private String parseErrorMessage(Throwable t) {
         if (t instanceof UnknownHostException) {
             return Constants.ERROR_NO_INTERNET;

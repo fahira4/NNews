@@ -62,4 +62,7 @@ public final class Constants {
     public static final String ERROR_NO_INTERNET = "NO_INTERNET";
     public static final String ERROR_GENERIC = "Something went wrong";
     public static final String ERROR_EMPTY = "No articles found";
+    // ===== ERROR MESSAGES =====
+    public static final String ERROR_RATE_LIMIT = "RATE_LIMIT";
+    public static final String ERROR_INVALID_API_KEY = "INVALID_API_KEY";
 }
