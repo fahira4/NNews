@@ -54,4 +54,22 @@
     <string name="label_about">About</string>
     <string name="state_error_rate_limit">API limit reached. Please wait a moment and try again.</string>
     <string name="state_error_api_key">Invalid API key. Please check your configuration.</string>
+    <!-- Bookmark -->
+    <string name="label_clear_bookmarks">Clear All Bookmarks</string>
+    <string name="label_clear_bookmarks_desc">Remove all saved articles</string>
+    <string name="msg_bookmarks_cleared">All bookmarks cleared</string>
+    <string name="dialog_clear_bookmarks_msg">
+    Are you sure you want to remove all bookmarks?
+    This action cannot be undone.
+</string>
+    <string name="dialog_clear_cache_msg">
+    This will clear cached data and images.
+    Are you sure?
+</string>
+    <string name="dialog_delete_bookmark_msg">
+    Remove this article from bookmarks?
+</string>
+    <string name="label_remove_bookmark">Remove Bookmark</string>
+    <string name="label_delete">Delete</string>
+    <string name="label_cancel">Cancel</string>
 </resources>

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.nnews.R;
 import com.example.nnews.adapter.NewsAdapter;
 import com.example.nnews.data.model.Article;
 import com.example.nnews.databinding.FragmentBookmarkBinding;
@@ -34,7 +36,9 @@ public class BookmarkFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        binding = FragmentBookmarkBinding.inflate(inflater, container, false);
+        binding = FragmentBookmarkBinding.inflate(
+                inflater, container, false
+        );
         return binding.getRoot();
     }
 
@@ -77,10 +81,9 @@ public class BookmarkFragment extends Fragment {
                     @Override
                     public void onBookmarkClick(Article article,
                                                 boolean isBookmarked) {
-                        // Di bookmark screen, bookmark selalu true
-                        // Jika di-untoggle, hapus dari bookmark
                         if (!isBookmarked) {
-                            viewModel.removeBookmark(article);
+                            // Konfirmasi hapus saat icon bookmark di-tap
+                            showDeleteConfirmDialog(article);
                         }
                     }
                 });
@@ -90,11 +93,20 @@ public class BookmarkFragment extends Fragment {
         SwipeToDeleteCallback swipeCallback =
                 new SwipeToDeleteCallback(requireContext()) {
                     @Override
-                    public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder,
-                                         int direction) {
+                    public void onSwiped(
+                            @NonNull RecyclerView.ViewHolder viewHolder,
+                            int direction) {
+
                         int position = viewHolder.getAdapterPosition();
-                        Article article = adapter.getCurrentList().get(position);
-                        viewModel.removeBookmark(article);
+
+                        if (position == RecyclerView.NO_ID) return;
+
+                        Article article = adapter
+                                .getCurrentList()
+                                .get(position);
+
+                        // Konfirmasi sebelum hapus
+                        showDeleteConfirmDialog(article, position);
                     }
                 };
 
@@ -103,12 +115,51 @@ public class BookmarkFragment extends Fragment {
     }
 
     // ===================================================
+    // DELETE CONFIRMATION
+    // ===================================================
+
+    /**
+     * Dialog konfirmasi hapus dari bookmark icon tap.
+     */
+    private void showDeleteConfirmDialog(Article article) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.label_remove_bookmark)
+                .setMessage(R.string.dialog_delete_bookmark_msg)
+                .setPositiveButton(R.string.label_delete,
+                        (dialog, which) ->
+                                viewModel.removeBookmark(article))
+                .setNegativeButton(R.string.label_cancel, null)
+                .show();
+    }
+
+    /**
+     * Dialog konfirmasi hapus dari swipe gesture.
+     * Restore item jika user cancel.
+     */
+    private void showDeleteConfirmDialog(Article article,
+                                         int position) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.label_remove_bookmark)
+                .setMessage(R.string.dialog_delete_bookmark_msg)
+                .setPositiveButton(R.string.label_delete,
+                        (dialog, which) ->
+                                viewModel.removeBookmark(article))
+                .setNegativeButton(R.string.label_cancel,
+                        (dialog, which) -> {
+                            // Restore item ke posisi semula
+                            adapter.notifyItemChanged(position);
+                        })
+                .setCancelable(false)
+                .show();
+    }
+
+    // ===================================================
     // OBSERVE
     // ===================================================
 
     private void observeBookmarks() {
-        viewModel.getBookmarks().observe(getViewLifecycleOwner(),
-                articles -> {
+        viewModel.getBookmarks().observe(
+                getViewLifecycleOwner(), articles -> {
                     if (articles != null && !articles.isEmpty()) {
                         showContent(articles);
                     } else {
@@ -141,8 +192,10 @@ public class BookmarkFragment extends Fragment {
 
         BookmarkFragmentDirections.ActionBookmarkToDetail action =
                 BookmarkFragmentDirections.actionBookmarkToDetail(
-                        article.getUrl() != null ? article.getUrl() : "",
-                        article.getTitle() != null ? article.getTitle() : ""
+                        article.getUrl() != null
+                                ? article.getUrl() : "",
+                        article.getTitle() != null
+                                ? article.getTitle() : ""
                 );
         Navigation.findNavController(requireView()).navigate(action);
     }

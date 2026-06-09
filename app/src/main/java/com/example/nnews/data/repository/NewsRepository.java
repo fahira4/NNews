@@ -231,6 +231,16 @@ public class NewsRepository {
         );
     }
 
+    public void clearAllBookmarks() {
+        deleteAllBookmarks();
+    }
+
+    public void deleteAllBookmarks() {
+        executor.execute(() ->
+                database.newsDao().deleteAllBookmarks()
+        );
+    }
+
     public LiveData<List<Article>> getAllBookmarks() {
         return database.newsDao().getAllBookmarks();
     }

@@ -8,7 +8,6 @@
     android:background="@color/colorBackground"
     tools:context=".ui.settings.SettingsFragment">
 
-    <!-- AppBar -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
@@ -34,7 +33,6 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -46,7 +44,7 @@
             android:orientation="vertical"
             android:paddingBottom="@dimen/spacing_xxl">
 
-            <!-- ===== APPEARANCE SECTION ===== -->
+            <!-- ===== APPEARANCE ===== -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -58,7 +56,7 @@
                 android:textSize="@dimen/text_sm"
                 android:textStyle="bold" />
 
-            <!-- Dark Mode Item -->
+            <!-- Dark Mode -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -114,7 +112,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ===== DATA SECTION ===== -->
+            <!-- ===== DATA ===== -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -126,7 +124,7 @@
                 android:textSize="@dimen/text_sm"
                 android:textStyle="bold" />
 
-            <!-- Clear Cache Item -->
+            <!-- Clear Cache -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_clear_cache"
                 android:layout_width="match_parent"
@@ -186,7 +184,67 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ===== ABOUT SECTION ===== -->
+            <!-- Clear All Bookmarks -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_clear_bookmarks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/spacing_md"
+                android:layout_marginVertical="@dimen/spacing_xs"
+                app:cardCornerRadius="@dimen/radius_md"
+                app:cardElevation="@dimen/card_elevation"
+                app:cardBackgroundColor="@color/colorSurface"
+                app:rippleColor="@color/colorPrimaryContainer">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_md">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_md"
+                        android:layout_height="@dimen/icon_md"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        android:src="@drawable/ic_delete"
+                        android:tint="@color/colorError"
+                        android:contentDescription="@string/label_clear_bookmarks" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_clear_bookmarks"
+                            android:textColor="@color/colorError"
+                            android:textSize="@dimen/text_body" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_clear_bookmarks_desc"
+                            android:textColor="@color/colorOnSurfaceVariant"
+                            android:textSize="@dimen/text_sm" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_md"
+                        android:layout_height="@dimen/icon_md"
+                        android:src="@drawable/ic_arrow_forward"
+                        android:tint="@color/colorOnSurfaceVariant"
+                        android:contentDescription="@null" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== ABOUT ===== -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -198,7 +256,7 @@
                 android:textSize="@dimen/text_sm"
                 android:textStyle="bold" />
 
-            <!-- App Version Item -->
+            <!-- App Version -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -243,7 +301,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- About App Item -->
+            <!-- About App -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_about"
                 android:layout_width="match_parent"

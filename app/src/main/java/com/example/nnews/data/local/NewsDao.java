@@ -11,14 +11,8 @@ import com.example.nnews.data.model.Article;
 
 import java.util.List;
 
-/**
- * Data Access Object untuk operasi Room Database.
- * Semua query database didefinisikan di sini.
- */
 @Dao
 public interface NewsDao {
-
-    // ===== BOOKMARK OPERATIONS =====
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertBookmark(Article article);
@@ -34,8 +28,6 @@ public interface NewsDao {
 
     @Query("DELETE FROM bookmarks")
     void deleteAllBookmarks();
-
-    // ===== CACHE OPERATIONS =====
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertArticles(List<Article> articles);

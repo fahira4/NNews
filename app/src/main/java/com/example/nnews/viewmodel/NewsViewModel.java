@@ -186,6 +186,10 @@ public class NewsViewModel extends ViewModel {
         repository.removeBookmark(article);
     }
 
+    public void clearAllBookmarks() {
+        repository.clearAllBookmarks();
+    }
+
     public LiveData<Boolean> isBookmarked(String url) {
         return repository.isBookmarked(url);
     }
