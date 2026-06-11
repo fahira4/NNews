@@ -16,34 +16,81 @@
         android:background="@color/colorBackground"
         app:elevation="0dp">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/toolbar_height"
-            style="@style/Widget.NNews.Toolbar">
-
-            <TextView
-                android:id="@+id/tv_toolbar_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:textColor="@color/colorOnBackground"
-                android:textSize="@dimen/text_xl"
-                android:textStyle="bold" />
-
-        </androidx.appcompat.widget.Toolbar>
-
-        <!-- Search Bar -->
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/search_view"
+        <!-- Top Bar: Logo + Title + Profile -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/spacing_md"
+            android:paddingTop="@dimen/spacing_md"
+            android:paddingBottom="@dimen/spacing_sm">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Good Morning 👋"
+                    android:textColor="@color/colorOnSurfaceVariant"
+                    android:textSize="@dimen/text_sm"
+                    android:id="@+id/tv_greeting" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textColor="@color/colorOnBackground"
+                    android:textSize="@dimen/text_xxl"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- Profile Avatar -->
+            <ImageView
+                android:id="@+id/iv_profile_avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_avatar"
+                android:padding="@dimen/spacing_xs"
+                android:src="@drawable/ic_profile"
+                android:tint="@color/white"
+                android:contentDescription="Profile" />
+
+        </LinearLayout>
+
+        <!-- Search Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
             android:layout_marginHorizontal="@dimen/spacing_md"
             android:layout_marginBottom="@dimen/spacing_sm"
-            app:queryHint="@string/hint_search"
-            app:iconifiedByDefault="false"
-            app:searchIcon="@drawable/ic_search"
-            style="@style/Widget.Material3.SearchBar" />
+            android:background="@drawable/bg_search_bar"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/spacing_md">
+
+            <ImageView
+                android:layout_width="@dimen/icon_md"
+                android:layout_height="@dimen/icon_md"
+                android:src="@drawable/ic_search"
+                android:tint="@color/colorOnSurfaceVariant"
+                android:contentDescription="@string/content_desc_search_icon" />
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/search_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:queryHint="@string/hint_search"
+                app:iconifiedByDefault="false"
+                app:searchIcon="@null"
+                android:background="@color/colorTransparent" />
+
+        </LinearLayout>
 
         <!-- Category Chips -->
         <HorizontalScrollView
@@ -59,11 +106,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:singleSelection="true"
-                app:selectionRequired="true">
+                app:selectionRequired="true"
+                app:chipSpacingHorizontal="@dimen/spacing_xs">
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_general"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/Widget.NNews.CategoryChip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="General"
@@ -71,49 +119,49 @@
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_world"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/Widget.NNews.CategoryChip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="World" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_technology"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/Widget.NNews.CategoryChip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Technology" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_business"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/Widget.NNews.CategoryChip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Business" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_sports"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/Widget.NNews.CategoryChip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Sports" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_science"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/Widget.NNews.CategoryChip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Science" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_health"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/Widget.NNews.CategoryChip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Health" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_entertainment"
-                    style="@style/Widget.Material3.Chip.Filter"
+                    style="@style/Widget.NNews.CategoryChip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Entertainment" />
@@ -124,14 +172,13 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Content Area -->
+    <!-- Content -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- SATU child langsung -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -150,20 +197,21 @@
                 android:textSize="@dimen/text_sm"
                 android:visibility="gone" />
 
-            <!-- Content Area -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1">
 
-                <!-- RecyclerView -->
+                <!-- News RecyclerView -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_news"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clipToPadding="false"
                     android:paddingVertical="@dimen/spacing_sm"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    tools:listitem="@layout/item_news"
+                    tools:visibility="visible" />
 
                 <!-- Shimmer Loading -->
                 <com.facebook.shimmer.ShimmerFrameLayout
@@ -255,4 +303,5 @@
         </LinearLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -4,6 +4,8 @@ agp = "8.7.0"
 java = "11"
 swiperefresh = "1.1.0"
 shimmer = "0.5.0"
+firebaseBom = "33.1.0"
+googleServices = "4.4.2"
 
 # AndroidX Core
 coreKtx = "1.13.1"
@@ -41,6 +43,9 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 
 # Lifecycle
 androidx-lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycle" }
@@ -76,3 +81,4 @@ shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shi
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 navigation-safeargs = { id = "androidx.navigation.safeargs", version.ref = "navigation" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }

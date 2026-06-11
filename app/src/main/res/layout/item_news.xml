@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,114 +7,133 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="@dimen/spacing_md"
     android:layout_marginVertical="@dimen/spacing_xs"
-    app:cardCornerRadius="@dimen/radius_md"
-    app:cardElevation="@dimen/card_elevation"
-    app:cardBackgroundColor="@color/colorSurface"
-    app:rippleColor="@color/colorPrimaryContainer">
+    app:cardCornerRadius="@dimen/radius_lg"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/colorSurface">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_sm">
 
         <!-- Thumbnail -->
         <ImageView
             android:id="@+id/iv_thumbnail"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/news_card_image_height"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
             android:contentDescription="@string/content_desc_news_image"
             android:scaleType="centerCrop"
-            tools:src="@color/colorSurfaceVariant"
+            android:background="@color/colorSurfaceVariant"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            tools:src="@color/colorSurfaceVariant" />
 
-        <!-- Source & Date Row -->
+        <!-- Category Tag -->
         <TextView
-            android:id="@+id/tv_source"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_md"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:textColor="@color/colorPrimaryBrand"
-            android:textSize="@dimen/text_sm"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end"
-            tools:text="BBC News"
-            app:layout_constraintTop_toBottomOf="@id/iv_thumbnail"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/tv_date" />
-
-        <TextView
-            android:id="@+id/tv_date"
+            android:id="@+id/tv_category_tag"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/spacing_md"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:textColor="@color/colorOnSurfaceVariant"
-            android:textSize="@dimen/text_sm"
-            tools:text="2024-01-01"
-            app:layout_constraintTop_toBottomOf="@id/iv_thumbnail"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBaseline_toBaselineOf="@id/tv_source" />
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:background="@drawable/bg_category_chip_unselected"
+            android:paddingHorizontal="@dimen/spacing_sm"
+            android:paddingVertical="@dimen/spacing_xxs"
+            android:textColor="@color/colorPrimaryBrand"
+            android:textSize="@dimen/text_xs"
+            android:textStyle="bold"
+            tools:text="Technology"
+            app:layout_constraintStart_toEndOf="@id/iv_thumbnail"
+            app:layout_constraintTop_toTopOf="@id/iv_thumbnail" />
 
         <!-- Title -->
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/spacing_md"
+            android:layout_marginStart="@dimen/spacing_sm"
             android:layout_marginTop="@dimen/spacing_xs"
             android:textColor="@color/colorOnSurface"
-            android:textSize="@dimen/text_body"
+            android:textSize="@dimen/text_md"
             android:textStyle="bold"
             android:maxLines="2"
             android:ellipsize="end"
             android:lineSpacingMultiplier="1.2"
-            tools:text="Breaking: Major Event Happens Around The World Today"
-            app:layout_constraintTop_toBottomOf="@id/tv_source"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            tools:text="Breaking News Title Goes Here For Testing"
+            app:layout_constraintStart_toEndOf="@id/iv_thumbnail"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_category_tag" />
 
-        <!-- Description -->
+        <!-- Description (Added this field) -->
         <TextView
             android:id="@+id/tv_description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/spacing_md"
-            android:layout_marginTop="@dimen/spacing_xs"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:layout_marginTop="2dp"
             android:textColor="@color/colorOnSurfaceVariant"
-            android:textSize="@dimen/text_md"
+            android:textSize="@dimen/text_sm"
             android:maxLines="2"
             android:ellipsize="end"
-            android:lineSpacingMultiplier="1.3"
-            tools:text="This is a short description of the news article that gives reader a brief overview."
-            app:layout_constraintTop_toBottomOf="@id/tv_title"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            tools:text="This is a short description of the news article to provide context to the reader."
+            app:layout_constraintStart_toEndOf="@id/iv_thumbnail"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_title" />
+
+        <!-- Source & Date -->
+        <LinearLayout
+            android:id="@+id/ll_meta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toEndOf="@id/iv_thumbnail"
+            app:layout_constraintEnd_toStartOf="@id/btn_bookmark"
+            app:layout_constraintTop_toBottomOf="@id/tv_description"
+            app:layout_constraintBottom_toBottomOf="@id/iv_thumbnail">
+
+            <TextView
+                android:id="@+id/tv_source"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorPrimaryBrand"
+                android:textSize="@dimen/text_xs"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="BBC News" />
+
+            <View
+                android:layout_width="3dp"
+                android:layout_height="3dp"
+                android:layout_marginHorizontal="@dimen/spacing_xs"
+                android:background="@color/colorOnSurfaceVariant"
+                android:alpha="0.5" />
+
+            <TextView
+                android:id="@+id/tv_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorOnSurfaceVariant"
+                android:textSize="@dimen/text_xs"
+                tools:text="2024-01-01" />
+
+        </LinearLayout>
 
         <!-- Bookmark Button -->
         <ImageButton
             android:id="@+id/btn_bookmark"
-            android:layout_width="@dimen/icon_xl"
-            android:layout_height="@dimen/icon_xl"
-            android:layout_marginEnd="@dimen/spacing_xs"
-            android:layout_marginBottom="@dimen/spacing_xs"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/content_desc_bookmark_icon"
             android:src="@drawable/ic_bookmark"
             android:tint="@color/colorOnSurfaceVariant"
+            android:padding="@dimen/spacing_xs"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_description" />
-
-        <!-- Divider bottom spacing -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/spacing_md"
-            app:layout_constraintTop_toBottomOf="@id/btn_bookmark"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="@id/iv_thumbnail" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>

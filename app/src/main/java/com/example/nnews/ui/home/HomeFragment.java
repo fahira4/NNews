@@ -61,6 +61,8 @@ public class HomeFragment extends Fragment {
         observeSearchResults();
         observeSearchMode();
         observeBookmarks();
+        setupGreeting();
+        setupProfileAvatar();
     }
 
     // ===================================================
@@ -275,6 +277,30 @@ public class HomeFragment extends Fragment {
                         adapter.setBookmarkedUrls(urls);
                     }
                 });
+    }
+
+    private void setupGreeting() {
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        int hour = calendar.get(java.util.Calendar.HOUR_OF_DAY);
+        String greeting;
+
+        if (hour >= 5 && hour < 12) {
+            greeting = "Good Morning 👋";
+        } else if (hour >= 12 && hour < 17) {
+            greeting = "Good Afternoon 👋";
+        } else if (hour >= 17 && hour < 21) {
+            greeting = "Good Evening 👋";
+        } else {
+            greeting = "Good Night 🌙";
+        }
+
+        binding.tvGreeting.setText(greeting);
+    }
+
+    private void setupProfileAvatar() {
+        binding.ivProfileAvatar.setOnClickListener(v -> {
+            // Navigate ke profile — akan diimplementasi di Tahap B
+        });
     }
 
     // ===================================================

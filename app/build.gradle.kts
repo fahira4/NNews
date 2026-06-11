@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -15,7 +16,6 @@ android {
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Baca langsung dari gradle.properties
         buildConfigField(
             "String",
             "NEWS_API_KEY",
@@ -34,7 +34,7 @@ android {
         }
         debug {
             isMinifyEnabled = false
-            applicationIdSuffix = ".debug"
+            // Removed applicationIdSuffix to match package name in google-services.json
             versionNameSuffix = "-debug"
         }
     }
@@ -82,12 +82,17 @@ dependencies {
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
 
+    // UI
+    implementation(libs.androidx.swiperefresh)
+    implementation(libs.shimmer)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.analytics)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
-    // UI
-    implementation(libs.androidx.swiperefresh)
-    implementation(libs.shimmer)
 }

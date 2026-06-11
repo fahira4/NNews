@@ -66,4 +66,27 @@
         <item name="android:background">@color/colorBottomNavBackground</item>
     </style>
 
+    <!-- Category Chip Style -->
+    <style name="Widget.NNews.CategoryChip"
+        parent="Widget.Material3.Chip.Filter">
+        <item name="android:textSize">@dimen/text_sm</item>
+        <item name="android:textStyle">bold</item>
+        <item name="chipCornerRadius">@dimen/radius_full</item>
+        <item name="chipMinHeight">32dp</item>
+        <item name="chipStartPadding">@dimen/spacing_md</item>
+        <item name="chipEndPadding">@dimen/spacing_md</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="chipIcon">@null</item>
+    </style>
+
+    <!-- Input Field Style -->
+    <style name="Widget.NNews.TextInputLayout"
+        parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_md</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_md</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_md</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_md</item>
+        <item name="boxStrokeColor">@color/colorOutlineVariant</item>
+    </style>
+
 </resources>

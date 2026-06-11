@@ -19,12 +19,13 @@
     <color name="colorOnSecondaryContainer">#CBF0F8</color>
 
     <!-- ===== BACKGROUND & SURFACE ===== -->
-    <color name="colorBackground">#0F1117</color>
-    <color name="colorOnBackground">#E3E2E6</color>
-    <color name="colorSurface">#1A1C1E</color>
-    <color name="colorOnSurface">#E3E2E6</color>
-    <color name="colorSurfaceVariant">#1E2430</color>
-    <color name="colorOnSurfaceVariant">#C4C6D0</color>
+    <color name="colorBackground">#0A0E1A</color>
+    <color name="colorOnBackground">#E8EAED</color>
+    <color name="colorSurface">#141824</color>
+    <color name="colorOnSurface">#E8EAED</color>
+    <color name="colorSurfaceVariant">#1E2435</color>
+    <color name="colorOnSurfaceVariant">#C4C7D0</color>
+    <color name="colorSurfaceElevated">#1A1F2E</color>
 
     <!-- ===== ERROR ===== -->
     <color name="colorError">#FFB4AB</color>
@@ -32,16 +33,16 @@
 
     <!-- ===== OUTLINE ===== -->
     <color name="colorOutline">#8E9099</color>
-    <color name="colorOutlineVariant">#44474F</color>
+    <color name="colorOutlineVariant">#2A3045</color>
 
     <!-- ===== STATUS & NAV BAR ===== -->
-    <color name="colorStatusBar">#0F1117</color>
-    <color name="colorNavigationBar">#0F1117</color>
+    <color name="colorStatusBar">#0A0E1A</color>
+    <color name="colorNavigationBar">#0A0E1A</color>
 
     <!-- ===== SEMANTIC ===== -->
-    <color name="colorDivider">#2C2C2C</color>
-    <color name="colorShimmerBase">#2A2A2A</color>
-    <color name="colorShimmerHighlight">#3A3A3A</color>
+    <color name="colorDivider">#1E2435</color>
+    <color name="colorShimmerBase">#1E2435</color>
+    <color name="colorShimmerHighlight">#252B3D</color>
     <color name="colorBookmarkActive">#FFD600</color>
     <color name="colorBookmarkInactive">#757575</color>
     <color name="colorCategoryTag">#0D47A1</color>
@@ -50,18 +51,28 @@
     <color name="colorTransparent">#00000000</color>
 
     <!-- ===== SPLASH ===== -->
-    <color name="colorSplashBackground">#0F1117</color>
+    <color name="colorSplashBackground">#0A0E1A</color>
     <color name="colorSplashIcon">#ADC6FF</color>
 
     <!-- ===== TOOLBAR ===== -->
-    <color name="colorToolbarBackground">#0F1117</color>
-    <color name="colorToolbarTitle">#E3E2E6</color>
+    <color name="colorToolbarBackground">#0A0E1A</color>
+    <color name="colorToolbarTitle">#E8EAED</color>
 
     <!-- ===== BOTTOM NAV ===== -->
-    <color name="colorBottomNavBackground">#1A1C1E</color>
+    <color name="colorBottomNavBackground">#141824</color>
+
+    <!-- ===== GRADIENT ===== -->
+    <color name="colorGradientStart">#ADC6FF</color>
+    <color name="colorGradientEnd">#4DD0E1</color>
+
+    <!-- ===== CATEGORY CHIPS ===== -->
+    <color name="colorChipSelected">#ADC6FF</color>
+    <color name="colorChipUnselected">#1E2435</color>
+    <color name="colorChipTextSelected">#002D6E</color>
+    <color name="colorChipTextUnselected">#C4C7D0</color>
 
     <!-- ===== MISC ===== -->
-    <color name="white">#E3E2E6</color>
-    <color name="black">#0F1117</color>
+    <color name="white">#E8EAED</color>
+    <color name="black">#0A0E1A</color>
 
 </resources>
