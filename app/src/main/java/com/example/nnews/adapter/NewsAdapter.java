@@ -53,18 +53,23 @@ public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder
     private static final DiffUtil.ItemCallback<Article> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<Article>() {
                 @Override
-                public boolean areItemsTheSame(@NonNull Article oldItem,
-                                               @NonNull Article newItem) {
+                public boolean areItemsTheSame(
+                        @NonNull Article oldItem,
+                        @NonNull Article newItem) {
                     return oldItem.getUrl().equals(newItem.getUrl());
                 }
 
                 @Override
-                public boolean areContentsTheSame(@NonNull Article oldItem,
-                                                  @NonNull Article newItem) {
+                public boolean areContentsTheSame(
+                        @NonNull Article oldItem,
+                        @NonNull Article newItem) {
+                    // Selalu anggap berbeda jika dari cache
+                    // agar list selalu di-render ulang
                     return oldItem.getUrl().equals(newItem.getUrl())
-                            && safeEquals(oldItem.getTitle(), newItem.getTitle())
-                            && safeEquals(oldItem.getDescription(),
-                            newItem.getDescription());
+                            && safeEquals(oldItem.getTitle(),
+                            newItem.getTitle())
+                            && safeEquals(oldItem.getImage(),
+                            newItem.getImage());
                 }
 
                 private boolean safeEquals(String a, String b) {

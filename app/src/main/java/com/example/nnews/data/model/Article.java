@@ -8,8 +8,8 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  * Model Article — digunakan untuk:
- * 1. Parsing response dari GNews API (via Gson @SerializedName)
- * 2. Penyimpanan lokal di Room Database (@Entity)
+ * 1. Parsing response dari GNews API
+ * 2. Penyimpanan bookmark di Room (@Entity bookmarks)
  */
 @Entity(tableName = "bookmarks")
 public class Article {
@@ -37,11 +37,7 @@ public class Article {
     @SerializedName("source")
     private Source source;
 
-    // ===== Konstruktor =====
-
     public Article() {}
-
-    // ===== Getter =====
 
     @NonNull
     public String getUrl() { return url; }
@@ -52,19 +48,18 @@ public class Article {
     public String getPublishedAt() { return publishedAt; }
     public Source getSource() { return source; }
 
-    // ===== Setter =====
-
     public void setUrl(@NonNull String url) { this.url = url; }
     public void setTitle(String title) { this.title = title; }
-    public void setDescription(String description) { this.description = description; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
     public void setContent(String content) { this.content = content; }
     public void setImage(String image) { this.image = image; }
-    public void setPublishedAt(String publishedAt) { this.publishedAt = publishedAt; }
+    public void setPublishedAt(String publishedAt) {
+        this.publishedAt = publishedAt;
+    }
     public void setSource(Source source) { this.source = source; }
 
-    /**
-     * Inner class untuk data source berita.
-     */
     public static class Source {
 
         @SerializedName("name")
@@ -75,7 +70,6 @@ public class Article {
 
         public String getName() { return name; }
         public String getUrl() { return url; }
-
         public void setName(String name) { this.name = name; }
         public void setUrl(String url) { this.url = url; }
     }

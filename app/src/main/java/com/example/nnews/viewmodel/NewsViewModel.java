@@ -18,27 +18,20 @@ public class NewsViewModel extends ViewModel {
     private final NewsRepository repository;
 
     // ===== TOP HEADLINES =====
-    private final MutableLiveData<String> selectedCategory =
+    // Gunakan format "category|timestamp" untuk force refresh
+    private final MutableLiveData<String> headlineTrigger =
             new MutableLiveData<>();
     private final LiveData<Result<List<Article>>> topHeadlines;
+    private String currentCategory = Constants.DEFAULT_CATEGORY;
 
     // ===== SEARCH =====
-    // MutableLiveData query — trigger search setiap berubah
-    private final MutableLiveData<String> searchQuery =
-            new MutableLiveData<>();
-
-    // MediatorLiveData — lebih aman dari observeForever
-    private final MediatorLiveData<Result<List<Article>>> searchResults =
-            new MediatorLiveData<>();
-
-    // Track LiveData search sebelumnya agar bisa dilepas
+    private final MediatorLiveData<Result<List<Article>>>
+            searchResults = new MediatorLiveData<>();
     private LiveData<Result<List<Article>>> lastSearchLiveData = null;
 
     // ===== SEARCH MODE =====
     private final MutableLiveData<Boolean> isSearchMode =
             new MutableLiveData<>(false);
-
-    // ===== LAST QUERY =====
     private String lastQuery = "";
 
     // ===== BOOKMARK =====
@@ -51,21 +44,30 @@ public class NewsViewModel extends ViewModel {
     public NewsViewModel(NewsRepository repository) {
         this.repository = repository;
 
-        // Headlines reactive terhadap category
+        // switchMap berdasarkan trigger string
+        // Format: "category|timestamp"
         topHeadlines = Transformations.switchMap(
-                selectedCategory,
-                category -> {
-                    if (category == null) {
+                headlineTrigger,
+                trigger -> {
+                    if (trigger == null) {
                         return new MutableLiveData<>();
                     }
+                    // Ambil category dari trigger (sebelum |)
+                    String category = trigger.contains("|")
+                            ? trigger.split("\\|")[0]
+                            : trigger;
+
+                    android.util.Log.d("NewsViewModel",
+                            "fetchHeadlines: " + category);
+
                     return repository.getTopHeadlines(category);
                 }
         );
 
         bookmarks = repository.getAllBookmarks();
 
-        // Default category
-        selectedCategory.setValue(Constants.DEFAULT_CATEGORY);
+        // Set trigger awal
+        triggerHeadlines(Constants.DEFAULT_CATEGORY);
     }
 
     // ===================================================
@@ -76,23 +78,37 @@ public class NewsViewModel extends ViewModel {
         return topHeadlines;
     }
 
+    /**
+     * Ganti category — trigger fetch baru.
+     */
     public void setCategory(String category) {
-        if (category != null) {
-            selectedCategory.setValue(category);
+        if (category != null
+                && !category.equals(currentCategory)) {
+            currentCategory = category;
+            triggerHeadlines(category);
         }
     }
 
+    /**
+     * Force refresh dengan category yang sama.
+     * Gunakan timestamp agar LiveData detect perubahan.
+     */
     public void refreshHeadlines() {
-        String current = selectedCategory.getValue() != null
-                ? selectedCategory.getValue()
-                : Constants.DEFAULT_CATEGORY;
-        selectedCategory.setValue(current);
+        triggerHeadlines(currentCategory);
+    }
+
+    /**
+     * Internal trigger — selalu emit value baru
+     * karena timestamp selalu berbeda.
+     */
+    private void triggerHeadlines(String category) {
+        String trigger = category + "|"
+                + System.currentTimeMillis();
+        headlineTrigger.setValue(trigger);
     }
 
     public String getSelectedCategory() {
-        return selectedCategory.getValue() != null
-                ? selectedCategory.getValue()
-                : Constants.DEFAULT_CATEGORY;
+        return currentCategory;
     }
 
     // ===================================================
@@ -103,10 +119,6 @@ public class NewsViewModel extends ViewModel {
         return searchResults;
     }
 
-    /**
-     * Trigger search dengan query baru.
-     * Menggunakan MediatorLiveData agar aman dari memory leak.
-     */
     public void searchNews(String query) {
         if (query == null || query.trim().isEmpty()) {
             clearSearch();
@@ -115,7 +127,6 @@ public class NewsViewModel extends ViewModel {
 
         String trimmedQuery = query.trim();
 
-        // Skip jika query sama dengan yang terakhir
         if (trimmedQuery.equals(lastQuery)
                 && Boolean.TRUE.equals(isSearchMode.getValue())) {
             return;
@@ -123,25 +134,18 @@ public class NewsViewModel extends ViewModel {
 
         lastQuery = trimmedQuery;
         isSearchMode.setValue(true);
-
-        // Set loading
         searchResults.setValue(Result.loading());
 
-        // Lepas source lama dari MediatorLiveData
         if (lastSearchLiveData != null) {
             searchResults.removeSource(lastSearchLiveData);
             lastSearchLiveData = null;
         }
 
-        // Buat LiveData baru dari repository
         LiveData<Result<List<Article>>> newSearch =
                 repository.searchNews(trimmedQuery);
-
         lastSearchLiveData = newSearch;
 
-        // Tambahkan sebagai source baru
         searchResults.addSource(newSearch, result -> {
-            // Hanya forward jika query masih relevan
             if (trimmedQuery.equals(lastQuery)) {
                 searchResults.setValue(result);
             }
@@ -152,7 +156,6 @@ public class NewsViewModel extends ViewModel {
         lastQuery = "";
         isSearchMode.setValue(false);
 
-        // Lepas source dari MediatorLiveData
         if (lastSearchLiveData != null) {
             searchResults.removeSource(lastSearchLiveData);
             lastSearchLiveData = null;
@@ -186,12 +189,12 @@ public class NewsViewModel extends ViewModel {
         repository.removeBookmark(article);
     }
 
-    public void clearAllBookmarks() {
-        repository.clearAllBookmarks();
-    }
-
     public LiveData<Boolean> isBookmarked(String url) {
         return repository.isBookmarked(url);
+    }
+
+    public void clearAllBookmarks() {
+        repository.deleteAllBookmarks();
     }
 
     // ===================================================
@@ -217,7 +220,6 @@ public class NewsViewModel extends ViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        // Bersihkan semua source saat ViewModel destroyed
         if (lastSearchLiveData != null) {
             searchResults.removeSource(lastSearchLiveData);
             lastSearchLiveData = null;

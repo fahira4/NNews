@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.nnews.data.local.NewsDatabase;
 import com.example.nnews.data.model.Article;
+import com.example.nnews.data.model.CachedArticle;
 import com.example.nnews.data.model.GNewsResponse;
 import com.example.nnews.data.remote.NetworkClient;
 import com.example.nnews.data.remote.NewsApiService;
@@ -19,6 +20,7 @@ import com.example.nnews.utils.Result;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,14 +29,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * Repository — single source of truth.
- *
- * Aturan:
- * - Ada internet → fetch dari API
- * - Tidak ada internet → return error NO_INTERNET
- * - Bookmark → selalu dari Room Database
- */
 public class NewsRepository {
 
     private static volatile NewsRepository instance;
@@ -42,12 +36,6 @@ public class NewsRepository {
     private final RemoteDataSource remoteDataSource;
     private final NewsDatabase database;
     private final Context context;
-    public static final String ERROR_NO_INTERNET = "NO_INTERNET";
-    public static final String ERROR_GENERIC = "Something went wrong";
-    public static final String ERROR_EMPTY = "No articles found";
-    public static final String ERROR_RATE_LIMIT = "RATE_LIMIT";
-    public static final String ERROR_INVALID_API_KEY = "INVALID_API_KEY";
-
     private final ExecutorService executor =
             Executors.newFixedThreadPool(2);
 
@@ -86,10 +74,12 @@ public class NewsRepository {
         result.setValue(Result.loading());
 
         if (!NetworkUtils.isNetworkAvailable(context)) {
-            result.setValue(Result.error(Constants.ERROR_NO_INTERNET));
+            // Offline → ambil dari cache
+            loadFromCache(category, result);
             return result;
         }
 
+        // Online → fetch dari API
         remoteDataSource.getTopHeadlines(category)
                 .enqueue(new Callback<GNewsResponse>() {
                     @Override
@@ -99,28 +89,21 @@ public class NewsRepository {
 
                         if (response.isSuccessful()
                                 && response.body() != null
-                                && response.body().getArticles() != null) {
-                            result.postValue(Result.success(
-                                    response.body().getArticles()
-                            ));
+                                && response.body().getArticles() != null
+                                && !response.body()
+                                .getArticles().isEmpty()) {
+
+                            List<Article> articles =
+                                    response.body().getArticles();
+
+                            // Simpan ke cache di background
+                            saveToCache(articles, category);
+
+                            result.postValue(Result.success(articles));
+
                         } else {
-                            // Log untuk debug
-                            String errorBody = "";
-                            try {
-                                if (response.errorBody() != null) {
-                                    errorBody = response.errorBody().string();
-                                }
-                            } catch (Exception e) {
-                                errorBody = "Could not read error body";
-                            }
-
-                            android.util.Log.e("NewsRepository",
-                                    "API Error - Code: " + response.code()
-                                            + " | Body: " + errorBody);
-
-                            result.postValue(Result.error(
-                                    parseApiError(response.code(), errorBody)
-                            ));
+                            // API gagal → coba dari cache
+                            loadFromCache(category, result);
                         }
                     }
 
@@ -128,53 +111,112 @@ public class NewsRepository {
                     public void onFailure(
                             @NonNull Call<GNewsResponse> call,
                             @NonNull Throwable t) {
-                        result.postValue(
-                                Result.error(parseErrorMessage(t))
-                        );
+                        // Network error → coba dari cache
+                        loadFromCache(category, result);
                     }
                 });
 
         return result;
     }
 
+    // ===================================================
+    // CACHE OPERATIONS
+    // ===================================================
+
     /**
-     * Parse HTTP error code menjadi pesan yang user-friendly.
+     * Simpan artikel ke cache Room di background thread.
      */
-    private String parseApiError(int code, String errorBody) {
-        switch (code) {
-            case 400:
-                return "Bad request. Please try again.";
-            case 401:
-                return Constants.ERROR_INVALID_API_KEY;
-            case 403:
-                return Constants.ERROR_INVALID_API_KEY;
-            case 429:
-                return Constants.ERROR_RATE_LIMIT;
-            case 500:
-            case 503:
-                return "Server error. Please try again later.";
-            default:
-                return "Failed to load news. Code: " + code;
-        }
+    private void saveToCache(List<Article> articles,
+                             String category) {
+        executor.execute(() -> {
+            try {
+                // Hapus cache lama untuk kategori ini
+                database.cacheDao().deleteCacheByCategory(category);
+
+                // Simpan yang baru
+                List<CachedArticle> cachedArticles = new ArrayList<>();
+                for (Article article : articles) {
+                    cachedArticles.add(
+                            CachedArticle.fromArticle(article, category)
+                    );
+                }
+                database.cacheDao().insertAll(cachedArticles);
+
+                android.util.Log.d("NewsRepository",
+                        "Cached " + articles.size()
+                                + " articles for: " + category);
+
+            } catch (Exception e) {
+                android.util.Log.e("NewsRepository",
+                        "Cache save error: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Ambil artikel dari cache Room di background thread.
+     * Jika cache kosong → return error.
+     * Jika cache ada → return data dengan info offline.
+     */
+    private void loadFromCache(String category,
+                               MutableLiveData<Result<List<Article>>>
+                                       result) {
+        executor.execute(() -> {
+            try {
+                List<CachedArticle> cached =
+                        database.cacheDao()
+                                .getCachedArticles(category);
+
+                if (cached != null && !cached.isEmpty()) {
+                    // Ada cache → konversi ke Article
+                    List<Article> articles = new ArrayList<>();
+                    for (CachedArticle ca : cached) {
+                        articles.add(ca.toArticle());
+                    }
+
+                    android.util.Log.d("NewsRepository",
+                            "Loaded " + articles.size()
+                                    + " articles from cache");
+
+                    result.postValue(Result.success(articles));
+
+                } else {
+                    // Tidak ada cache sama sekali
+                    result.postValue(Result.error(
+                            Constants.ERROR_NO_INTERNET
+                    ));
+                }
+
+            } catch (Exception e) {
+                result.postValue(Result.error(
+                        Constants.ERROR_NO_INTERNET
+                ));
+            }
+        });
     }
 
     // ===================================================
     // SEARCH
     // ===================================================
 
-    public LiveData<Result<List<Article>>> searchNews(String query) {
+    public LiveData<Result<List<Article>>> searchNews(
+            String query) {
+
         MutableLiveData<Result<List<Article>>> result =
                 new MutableLiveData<>();
 
         result.setValue(Result.loading());
 
         if (!NetworkUtils.isNetworkAvailable(context)) {
-            result.setValue(Result.error(Constants.ERROR_NO_INTERNET));
+            result.setValue(Result.error(
+                    Constants.ERROR_NO_INTERNET
+            ));
             return result;
         }
 
-        // Validasi query
-        String trimmedQuery = query != null ? query.trim() : "";
+        String trimmedQuery = query != null
+                ? query.trim() : "";
+
         if (trimmedQuery.isEmpty()) {
             result.setValue(Result.success(null));
             return result;
@@ -192,9 +234,11 @@ public class NewsRepository {
                                 && response.body().getArticles() != null
                                 && !response.body()
                                 .getArticles().isEmpty()) {
+
                             result.postValue(Result.success(
                                     response.body().getArticles()
                             ));
+
                         } else {
                             result.postValue(Result.error(
                                     "No results for: " + trimmedQuery
@@ -206,9 +250,9 @@ public class NewsRepository {
                     public void onFailure(
                             @NonNull Call<GNewsResponse> call,
                             @NonNull Throwable t) {
-                        result.postValue(
-                                Result.error(parseErrorMessage(t))
-                        );
+                        result.postValue(Result.error(
+                                parseErrorMessage(t)
+                        ));
                     }
                 });
 
@@ -231,10 +275,6 @@ public class NewsRepository {
         );
     }
 
-    public void clearAllBookmarks() {
-        deleteAllBookmarks();
-    }
-
     public void deleteAllBookmarks() {
         executor.execute(() ->
                 database.newsDao().deleteAllBookmarks()
@@ -252,6 +292,21 @@ public class NewsRepository {
     // ===================================================
     // HELPER
     // ===================================================
+
+    private String parseApiError(int code) {
+        switch (code) {
+            case 401:
+            case 403:
+                return Constants.ERROR_INVALID_API_KEY;
+            case 429:
+                return Constants.ERROR_RATE_LIMIT;
+            case 500:
+            case 503:
+                return "Server error. Please try again later.";
+            default:
+                return "Failed to load news. Code: " + code;
+        }
+    }
 
     private String parseErrorMessage(Throwable t) {
         if (t instanceof UnknownHostException) {

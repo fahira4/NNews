@@ -131,108 +131,128 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <FrameLayout
+        <!-- SATU child langsung -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <!-- News RecyclerView -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_news"
+            <!-- Offline Banner -->
+            <TextView
+                android:id="@+id/tv_offline_banner"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingVertical="@dimen/spacing_sm"
-                android:visibility="gone"
-                tools:listitem="@layout/item_news"
-                tools:visibility="visible" />
+                android:layout_height="wrap_content"
+                android:background="@color/colorSecondaryContainer"
+                android:gravity="center"
+                android:padding="@dimen/spacing_sm"
+                android:text="Showing cached data. Pull to refresh when online."
+                android:textColor="@color/colorOnSecondaryContainer"
+                android:textSize="@dimen/text_sm"
+                android:visibility="gone" />
 
-            <!-- Shimmer Loading -->
-            <com.facebook.shimmer.ShimmerFrameLayout
-                android:id="@+id/shimmer_layout"
+            <!-- Content Area -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="visible">
+                android:layout_height="0dp"
+                android:layout_weight="1">
 
-                <LinearLayout
+                <!-- RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_news"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingTop="@dimen/spacing_sm">
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingVertical="@dimen/spacing_sm"
+                    android:visibility="gone" />
 
-                    <include layout="@layout/item_news_shimmer" />
-                    <include layout="@layout/item_news_shimmer" />
-                    <include layout="@layout/item_news_shimmer" />
+                <!-- Shimmer Loading -->
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/shimmer_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="visible">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingTop="@dimen/spacing_sm">
+
+                        <include layout="@layout/item_news_shimmer" />
+                        <include layout="@layout/item_news_shimmer" />
+                        <include layout="@layout/item_news_shimmer" />
+
+                    </LinearLayout>
+
+                </com.facebook.shimmer.ShimmerFrameLayout>
+
+                <!-- Error State -->
+                <LinearLayout
+                    android:id="@+id/layout_error"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_xl"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="@dimen/empty_state_icon_size"
+                        android:layout_height="@dimen/empty_state_icon_size"
+                        android:src="@drawable/ic_error"
+                        android:contentDescription="@string/state_error"
+                        android:tint="@color/colorError" />
+
+                    <TextView
+                        android:id="@+id/tv_error_message"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_md"
+                        android:gravity="center"
+                        android:text="@string/state_error"
+                        android:textColor="@color/colorOnSurface"
+                        android:textSize="@dimen/text_body" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_retry"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_md"
+                        android:text="@string/state_error_retry" />
 
                 </LinearLayout>
 
-            </com.facebook.shimmer.ShimmerFrameLayout>
-
-            <!-- Error State -->
-            <LinearLayout
-                android:id="@+id/layout_error"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_xl"
-                android:visibility="gone">
-
-                <ImageView
-                    android:layout_width="@dimen/empty_state_icon_size"
-                    android:layout_height="@dimen/empty_state_icon_size"
-                    android:src="@drawable/ic_error"
-                    android:contentDescription="@string/state_error"
-                    android:tint="@color/colorError" />
-
-                <TextView
-                    android:id="@+id/tv_error_message"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_md"
+                <!-- Empty State -->
+                <LinearLayout
+                    android:id="@+id/layout_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="@string/state_error"
-                    android:textColor="@color/colorOnSurface"
-                    android:textSize="@dimen/text_body" />
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_xl"
+                    android:visibility="gone">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_retry"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_md"
-                    android:text="@string/state_error_retry" />
+                    <ImageView
+                        android:layout_width="@dimen/empty_state_icon_size"
+                        android:layout_height="@dimen/empty_state_icon_size"
+                        android:src="@drawable/ic_empty"
+                        android:contentDescription="@string/state_empty"
+                        android:tint="@color/colorOnSurfaceVariant" />
 
-            </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_md"
+                        android:gravity="center"
+                        android:text="@string/state_empty"
+                        android:textColor="@color/colorOnSurfaceVariant"
+                        android:textSize="@dimen/text_body" />
 
-            <!-- Empty State -->
-            <LinearLayout
-                android:id="@+id/layout_empty"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_xl"
-                android:visibility="gone">
+                </LinearLayout>
 
-                <ImageView
-                    android:layout_width="@dimen/empty_state_icon_size"
-                    android:layout_height="@dimen/empty_state_icon_size"
-                    android:src="@drawable/ic_empty"
-                    android:contentDescription="@string/state_empty"
-                    android:tint="@color/colorOnSurfaceVariant" />
+            </FrameLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_md"
-                    android:gravity="center"
-                    android:text="@string/state_empty"
-                    android:textColor="@color/colorOnSurfaceVariant"
-                    android:textSize="@dimen/text_body" />
-
-            </LinearLayout>
-
-        </FrameLayout>
+        </LinearLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

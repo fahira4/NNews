@@ -65,4 +65,6 @@ public final class Constants {
     // ===== ERROR MESSAGES =====
     public static final String ERROR_RATE_LIMIT = "RATE_LIMIT";
     public static final String ERROR_INVALID_API_KEY = "INVALID_API_KEY";
+    // Cache dianggap valid selama 30 menit
+    public static final long CACHE_DURATION_MS = 30 * 60 * 1000L;
 }

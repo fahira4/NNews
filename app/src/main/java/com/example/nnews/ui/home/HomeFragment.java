@@ -18,6 +18,7 @@ import com.example.nnews.data.model.Article;
 import com.example.nnews.databinding.FragmentHomeBinding;
 import com.example.nnews.utils.Constants;
 import com.example.nnews.utils.DebounceUtils;
+import com.example.nnews.utils.NetworkUtils;
 import com.example.nnews.viewmodel.NewsViewModel;
 import com.example.nnews.viewmodel.NewsViewModelFactory;
 
@@ -31,6 +32,9 @@ public class HomeFragment extends Fragment {
     private NewsViewModel viewModel;
     private NewsAdapter adapter;
     private DebounceUtils debounce;
+
+    // Flag agar chip listener tidak trigger saat pertama dibuat
+    private boolean chipsInitialized = false;
 
     @Nullable
     @Override
@@ -101,6 +105,8 @@ public class HomeFragment extends Fragment {
 
                     int chipId = checkedIds.get(0);
                     String category = getCategoryFromChipId(chipId);
+
+                    // ViewModel sudah handle skip jika sama
                     viewModel.setCategory(category);
                 });
     }
@@ -112,7 +118,6 @@ public class HomeFragment extends Fragment {
 
                     @Override
                     public boolean onQueryTextSubmit(String query) {
-                        // Submit langsung tanpa debounce
                         debounce.cancel();
                         if (query != null
                                 && !query.trim().isEmpty()) {
@@ -126,12 +131,9 @@ public class HomeFragment extends Fragment {
                     public boolean onQueryTextChange(String newText) {
                         if (newText == null
                                 || newText.trim().isEmpty()) {
-                            // Query dikosongkan → kembali ke headlines
                             debounce.cancel();
                             viewModel.clearSearch();
-                            viewModel.refreshHeadlines();
                         } else {
-                            // Debounce 600ms
                             String query = newText.trim();
                             debounce.debounce(() ->
                                     viewModel.searchNews(query)
@@ -141,11 +143,9 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
-        // Tombol X ditekan
         binding.searchView.setOnCloseListener(() -> {
             debounce.cancel();
             viewModel.clearSearch();
-            viewModel.refreshHeadlines();
             return false;
         });
     }
@@ -176,9 +176,17 @@ public class HomeFragment extends Fragment {
     private void observeHeadlines() {
         viewModel.getTopHeadlines().observe(
                 getViewLifecycleOwner(), result -> {
-                    // Skip jika sedang search
+
+                    android.util.Log.d("HomeFragment",
+                            "observeHeadlines triggered");
+
                     if (viewModel.isCurrentlySearching()) return;
                     if (result == null) return;
+
+                    android.util.Log.d("HomeFragment",
+                            "result status: " + result.getStatus()
+                                    + " | isSearching: "
+                                    + viewModel.isCurrentlySearching());
 
                     binding.swipeRefresh.setRefreshing(false);
 
@@ -189,6 +197,11 @@ public class HomeFragment extends Fragment {
                         case SUCCESS:
                             hideShimmer();
                             List<Article> articles = result.getData();
+                            android.util.Log.d("HomeFragment",
+                                    "SUCCESS, articles: "
+                                            + (articles != null
+                                            ? articles.size()
+                                            : "null"));
                             if (articles != null
                                     && !articles.isEmpty()) {
                                 showContent(articles);
@@ -198,6 +211,8 @@ public class HomeFragment extends Fragment {
                             break;
                         case ERROR:
                             hideShimmer();
+                            android.util.Log.e("HomeFragment",
+                                    "ERROR: " + result.getMessage());
                             showError(result.getMessage());
                             break;
                     }
@@ -207,7 +222,6 @@ public class HomeFragment extends Fragment {
     private void observeSearchResults() {
         viewModel.getSearchResults().observe(
                 getViewLifecycleOwner(), result -> {
-                    // Skip jika tidak sedang search
                     if (!viewModel.isCurrentlySearching()) return;
                     if (result == null) return;
 
@@ -239,11 +253,9 @@ public class HomeFragment extends Fragment {
         viewModel.getIsSearchMode().observe(
                 getViewLifecycleOwner(), isSearchMode -> {
                     if (isSearchMode != null && isSearchMode) {
-                        // Search aktif → sembunyikan chips
                         binding.scrollCategories
                                 .setVisibility(View.GONE);
                     } else {
-                        // Search tidak aktif → tampilkan chips
                         binding.scrollCategories
                                 .setVisibility(View.VISIBLE);
                     }
@@ -283,10 +295,18 @@ public class HomeFragment extends Fragment {
     }
 
     private void showContent(List<Article> articles) {
+        android.util.Log.d("HomeFragment",
+                "showContent called, size: "
+                        + (articles != null ? articles.size() : "null"));
+
         binding.rvNews.setVisibility(View.VISIBLE);
         binding.layoutError.setVisibility(View.GONE);
         binding.layoutEmpty.setVisibility(View.GONE);
         adapter.submitList(articles);
+
+        android.util.Log.d("HomeFragment",
+                "rvNews visibility: "
+                        + binding.rvNews.getVisibility());
     }
 
     private void showError(String message) {
@@ -296,19 +316,16 @@ public class HomeFragment extends Fragment {
 
         if (message == null) {
             binding.tvErrorMessage.setText(R.string.state_error);
-
         } else if (message.equals(Constants.ERROR_NO_INTERNET)) {
             binding.tvErrorMessage
                     .setText(R.string.state_error_network);
-
         } else if (message.equals(Constants.ERROR_RATE_LIMIT)) {
             binding.tvErrorMessage
                     .setText(R.string.state_error_rate_limit);
-
-        } else if (message.equals(Constants.ERROR_INVALID_API_KEY)) {
+        } else if (message.equals(
+                Constants.ERROR_INVALID_API_KEY)) {
             binding.tvErrorMessage
                     .setText(R.string.state_error_api_key);
-
         } else {
             binding.tvErrorMessage.setText(R.string.state_error);
         }
