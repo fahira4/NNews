@@ -1,6 +1,7 @@
 package com.example.nnews.adapter;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -116,14 +117,17 @@ public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder
             this.bookmarked = isBookmarked;
 
             // Title
-            binding.tvTitle.setText(article.getTitle());
+            if (article.getTitle() != null) {
+                binding.tvTitle.setText(article.getTitle());
+            }
 
             // Description
             if (article.getDescription() != null
                     && !article.getDescription().isEmpty()) {
+                binding.tvDescription.setVisibility(View.VISIBLE);
                 binding.tvDescription.setText(article.getDescription());
             } else {
-                binding.tvDescription.setText(R.string.state_empty);
+                binding.tvDescription.setVisibility(View.GONE);
             }
 
             // Source
@@ -151,17 +155,17 @@ public class NewsAdapter extends ListAdapter<Article, NewsAdapter.NewsViewHolder
                     .centerCrop()
                     .into(binding.ivThumbnail);
 
-            // Bookmark icon state
+            // Bookmark icon
             updateBookmarkIcon(isBookmarked);
 
-            // Click — buka detail
+            // Click article
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onArticleClick(article);
                 }
             });
 
-            // Bookmark click
+            // Click bookmark
             binding.btnBookmark.setOnClickListener(v -> {
                 this.bookmarked = !this.bookmarked;
                 updateBookmarkIcon(this.bookmarked);

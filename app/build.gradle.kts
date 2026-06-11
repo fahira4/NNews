@@ -95,4 +95,13 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.analytics)
+    implementation("com.google.firebase:firebase-storage") // <-- Tambahkan baris ini di sini
+
+    // Testing
+    testImplementation(libs.junit)
 }

@@ -53,5 +53,6 @@
 
     <!-- Empty State -->
     <dimen name="empty_state_icon_size">80dp</dimen>
+    <dimen name="news_thumbnail_size">100dp</dimen>
 
 </resources>

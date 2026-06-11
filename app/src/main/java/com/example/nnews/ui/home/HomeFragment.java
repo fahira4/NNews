@@ -63,6 +63,11 @@ public class HomeFragment extends Fragment {
         observeBookmarks();
         setupGreeting();
         setupProfileAvatar();
+
+        binding.ivProfileAvatar.setOnClickListener(v -> {
+            // Berpindah ke halaman Profile
+            Navigation.findNavController(v).navigate(R.id.profileFragment);
+        });
     }
 
     // ===================================================

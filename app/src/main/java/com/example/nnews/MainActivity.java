@@ -1,5 +1,6 @@
 package com.example.nnews;
 
+import android.content.Intent; // Tambahkan import Intent ini
 import android.os.Bundle;
 import android.view.View;
 
@@ -9,6 +10,8 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
+import com.example.nnews.ui.auth.LoginActivity;
+import com.google.firebase.auth.FirebaseAuth;
 import com.example.nnews.databinding.ActivityMainBinding;
 import com.example.nnews.utils.ThemeUtils;
 
@@ -21,6 +24,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
+
+        // ==========================================
+        // PENGECEKAN SESI FIREBASE
+        // ==========================================
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            // Jika user belum login, langsung lempar ke LoginActivity
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            finish(); // Hancurkan MainActivity agar tidak menumpuk di riwayat tombol "Back"
+            return;   // 'return' agar kode di bawah ini (load UI) tidak dieksekusi
+        }
+        // ==========================================
 
         ThemeUtils.applySavedTheme(this);
 
