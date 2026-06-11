@@ -3,6 +3,7 @@ package com.example.nnews.ui.auth;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,20 +26,40 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         binding.btnLogin.setOnClickListener(v -> handleLogin());
+
         binding.tvToRegister.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
             finish();
         });
+
+        // Aksi klik Lupa Password
+        binding.tvForgotPassword.setOnClickListener(v -> handleForgotPassword());
     }
 
     private void handleLogin() {
         String username = binding.etLoginUsername.getText().toString().trim();
         String password = binding.etLoginPassword.getText().toString().trim();
 
-        if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
-            Toast.makeText(this, "Username dan Password wajib diisi", Toast.LENGTH_SHORT).show();
-            return;
+        // Reset error visual sebelumnya
+        binding.tilLoginUsername.setError(null);
+        binding.tilLoginPassword.setError(null);
+
+        boolean isValid = true;
+
+        if (TextUtils.isEmpty(username)) {
+            binding.tilLoginUsername.setError("Email tidak boleh kosong");
+            isValid = false;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(username).matches()) {
+            binding.tilLoginUsername.setError("Format email tidak valid");
+            isValid = false;
         }
+
+        if (TextUtils.isEmpty(password)) {
+            binding.tilLoginPassword.setError("Password tidak boleh kosong");
+            isValid = false;
+        }
+
+        if (!isValid) return; // Hentikan proses jika ada yang tidak valid
 
         mAuth.signInWithEmailAndPassword(username, password)
                 .addOnCompleteListener(this, task -> {
@@ -47,7 +68,31 @@ public class LoginActivity extends AppCompatActivity {
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
                         finish();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Login Gagal: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        // Menampilkan pesan gagal yang lebih spesifik
+                        Toast.makeText(LoginActivity.this, "Login Gagal. Periksa email dan password Anda.", Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private void handleForgotPassword() {
+        String email = binding.etLoginUsername.getText().toString().trim();
+
+        if (TextUtils.isEmpty(email)) {
+            binding.tilLoginUsername.setError("Masukkan email Anda di sini untuk mereset password");
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.tilLoginUsername.setError("Format email tidak valid");
+            return;
+        }
+
+        mAuth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(LoginActivity.this, "Tautan pemulihan telah dikirim ke " + email, Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Gagal mengirim email: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
     }
