@@ -12,8 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.nnews.databinding.FragmentProfileBinding;
-// Pastikan baris ini sesuai dengan nama Activity Login Anda:
-// import com.example.nnews.ui.login.LoginActivity;
+import com.example.nnews.ui.auth.LoginActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;

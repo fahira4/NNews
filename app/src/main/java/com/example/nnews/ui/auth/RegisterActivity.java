@@ -67,8 +67,14 @@ public class RegisterActivity extends AppCompatActivity {
                                     .build();
 
                             user.updateProfile(profileUpdates).addOnCompleteListener(profileTask -> {
-                                Toast.makeText(RegisterActivity.this, "Pendaftaran Berhasil", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(RegisterActivity.this, MainActivity.class));
+                                // 1. Keluarkan (Sign Out) user agar sesi otomatisnya terputus
+                                mAuth.signOut();
+
+                                // 2. Tampilkan pesan berhasil
+                                Toast.makeText(RegisterActivity.this, "Pendaftaran Berhasil! Silakan masuk dengan akun Anda.", Toast.LENGTH_LONG).show();
+
+                                // 3. Arahkan kembali ke Halaman Login (bukan MainActivity)
+                                startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                                 finish();
                             });
                         }
